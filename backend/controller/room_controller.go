@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"slices"
 	"uno_online/game"
@@ -77,11 +78,15 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad reqeust", http.StatusBadRequest)
 		return
 	}
+	if slices.Contains(room.Players, *joining) {
+		http.Error(w, "Already joined", http.StatusBadRequest)
+		return
+	}
 
 	room.Players = append(room.Players, *joining)
 
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(room.Id)
+	json.NewEncoder(w).Encode(room)
 }
 
 // Delete: /room/{id}/players/
@@ -92,36 +97,41 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	var lId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&lId)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
 	rId, err := util.ExtractUrlParam(r.URL.Path, 2)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 	asUUID, err := uuid.Parse(rId)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
 	room := game.Rooms[asUUID]
 	if room == nil {
+		fmt.Println(err)
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
 	leaving := game.Players[lId.Id]
 	if leaving == nil {
-		http.Error(w, "Bad reqeust", http.StatusBadRequest)
+		fmt.Println(err)
+		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
 	leaveIndex := slices.Index(room.Players, *leaving)
 	if leaveIndex == -1 {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		http.Error(w, "Already left", http.StatusBadRequest)
 		return
 	}
 

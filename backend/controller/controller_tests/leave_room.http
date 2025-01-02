@@ -1,6 +1,6 @@
-DELETE http://localhost:8080/room/8a650dd8-3d2f-44cf-9e1d-79a45bd4cdeb/players HTTP/1.1
+DELETE http://localhost:8080/room/4d3e97bf-cc2e-4af0-9397-2a0e3b331c6f/players HTTP/1.1
 content-type: application/json
 
 {
-    "id": "aaaaa48d-ce76-4a9a-9ce9-4cb7d0c4482d"
+    "id": "52041871-8abf-4d03-8615-349753a791b6"
 }
