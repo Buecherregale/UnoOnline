@@ -1,14 +1,38 @@
 <script setup lang="ts">
-import {fa} from "cronstrue/dist/i18n/locales/fa";
+
+import type {Room} from "~/util/models";
+import {getIDFromCookie} from "~/util/getIDFromCookie";
 
 const showPopupHost = ref(false);
 const showPopupJoin = ref(false);
 const selectedPlayerCount = ref(2);
 const enteredLobbyID = ref("")
 
-function confirmedHost() {
-  alert(`You selected ${selectedPlayerCount.value} players.`);
+
+
+async function confirmedHost() {
+  //alert(`You selected ${selectedPlayerCount.value} players.`);
   showPopupHost.value = false;
+  const id = getIDFromCookie()
+  try {
+    const responseRoom: Room = await $fetch('/api/room', {
+          method: 'POST',
+          body: {
+            id: id,
+          },
+        }
+    );
+    console.log(responseRoom);
+    const room = useState('room',() => responseRoom);
+    const roomID = responseRoom.id
+    navigateTo(`/lobby-${roomID}`);
+  } catch (error) {
+    console.error('Error communicating with internal API:', error);
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to communicate with internal API',
+    });
+  }
 }
 
 function confirmedJoin() {

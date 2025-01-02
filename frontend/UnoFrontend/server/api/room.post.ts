@@ -1,22 +1,21 @@
-import {Player} from "~/util/models";
+import { Room } from "~/util/models";
 
-export default defineEventHandler(async (event): Promise<Player> => {
+export default defineEventHandler(async (event): Promise<Room> => {
     const body = await readBody(event);
-    const { name } = body;
-    let player = {} as Player;
-    player.name = name;
+    const { id } = body;
+    let room = {} as Room;
 
     try {
-        const externalResponse: string = await $fetch('/player', {
+        const externalResponse: string = await $fetch('/room', {
             method: 'POST',
             body: {
-                name: name,
+                id: id,
             },
             baseURL: 'http://localhost:8080'
         });
 
-        player.id = JSON.parse(externalResponse).id;
-        return player;
+        room = JSON.parse(externalResponse);
+        return room;
     } catch (error) {
         console.error('Error communicating with external API:', error);
         throw createError({
