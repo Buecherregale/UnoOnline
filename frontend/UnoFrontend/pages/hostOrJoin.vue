@@ -8,10 +8,7 @@ const showPopupJoin = ref(false);
 const selectedPlayerCount = ref(2);
 const enteredLobbyID = ref("")
 
-
-
 async function confirmedHost() {
-  //alert(`You selected ${selectedPlayerCount.value} players.`);
   showPopupHost.value = false;
   const id = getIDFromCookie()
   try {
@@ -35,9 +32,29 @@ async function confirmedHost() {
   }
 }
 
-function confirmedJoin() {
-  alert(`You entered ${enteredLobbyID.value} as lobby ID.`);
+async function confirmedJoin() {
   showPopupHost.value = false;
+  const id = getIDFromCookie()
+  console.log(enteredLobbyID.value)
+  try {
+    const responseRoom: Room = await $fetch(`api/room/${enteredLobbyID.value}/players`, {
+          method: 'POST',
+          body: {
+            id: id,
+          },
+        }
+    );
+    console.log(responseRoom);
+    const room = useState('room',() => responseRoom);
+    const roomID = responseRoom.id
+    navigateTo(`/lobby-${roomID}`);
+  } catch (error) {
+    console.error('Error communicating with internal API:', error);
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to communicate with internal API',
+    });
+  }
 }
 </script>
 
