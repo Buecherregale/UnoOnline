@@ -1,14 +1,19 @@
 import { Room } from "~/util/models";
 
 export default defineEventHandler(async (event): Promise<Room> => {
-    const id = getRouterParam(event, 'id')
+    const roomID = getRouterParam(event, 'id')
+    const body = await readBody(event);
+    const { id } = body;
 
     let room = {} as Room;
 
     try {
-        const externalResponse: string = await $fetch(`/room/${id}`, {
-            method: 'GET',
-            baseURL: 'http://localhost:8080'
+        const externalResponse: string = await $fetch(`/room/${roomID}/players`, {
+            method: 'POST',
+            baseURL: 'http://localhost:8080',
+            body: {
+                id: id,
+            },
         });
 
         room = JSON.parse(externalResponse);
