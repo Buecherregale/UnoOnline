@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"uno_online/game"
-	"uno_online/models"
+
+	"uno_online/api/data"
+	"uno_online/api/models"
 	"uno_online/util"
 
 	"github.com/google/uuid"
@@ -29,7 +30,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	owner := game.Players[pId.Id]
+	owner := data.Players[pId.Id]
 	if owner == nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -38,7 +39,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	rId := uuid.New()
 	room := models.Room{Id: rId, Players: []models.Player{*owner}, Owner: *owner}
 
-	game.Rooms[rId] = &room
+	data.Rooms[rId] = &room
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(room)
@@ -67,13 +68,13 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room := game.Rooms[asUUID]
+	room := data.Rooms[asUUID]
 	if room == nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
-	joining := game.Players[jId.Id]
+	joining := data.Players[jId.Id]
 	if joining == nil {
 		http.Error(w, "Bad reqeust", http.StatusBadRequest)
 		return
@@ -115,14 +116,14 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room := game.Rooms[asUUID]
+	room := data.Rooms[asUUID]
 	if room == nil {
 		fmt.Println(err)
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
-	leaving := game.Players[lId.Id]
+	leaving := data.Players[lId.Id]
 	if leaving == nil {
 		fmt.Println(err)
 		http.Error(w, "not found", http.StatusNotFound)
@@ -141,7 +142,7 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 			next = next % len(room.Players)
 			room.Owner = room.Players[next]
 		} else {
-			game.Rooms[room.Id] = nil
+			data.Rooms[room.Id] = nil
 			return
 		}
 	}
@@ -172,7 +173,7 @@ func Start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room := game.Rooms[asUUID]
+	room := data.Rooms[asUUID]
 	if room == nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
@@ -199,7 +200,7 @@ func GetRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room := game.Rooms[asUUID]
+	room := data.Rooms[asUUID]
 	if room == nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return

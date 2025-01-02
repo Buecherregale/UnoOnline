@@ -2,9 +2,10 @@ package main
 
 import (
 	"net/http"
-	"uno_online/controller"
-	"uno_online/game"
-	"uno_online/models"
+
+	"uno_online/api/controller"
+	game "uno_online/api/data"
+	"uno_online/api/models"
 
 	"github.com/google/uuid"
 )
