@@ -1,12 +1,12 @@
 <script setup>
-import {postPlayerUUID} from "~/util/postPlayerUUID.ts";
+import {playerFetches} from "~/util/playerFetches.ts";
 
 let name = ref("")
 
 async function handleSubmit() {
   if (name.value.trim()) {
     alert(`Hello, ${name.value}!`); // You can replace this with any action
-    const playerUUID = await postPlayerUUID(name.value, "localhost");
+    const playerUUID = await playerFetches(name.value, "localhost");
     const playerUUIDCookie = useCookie('playerUUID');
     playerUUIDCookie.value = playerUUID;
   } else {
