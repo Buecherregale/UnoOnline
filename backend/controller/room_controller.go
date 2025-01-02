@@ -11,19 +11,24 @@ import (
 	"github.com/google/uuid"
 )
 
+// struct to unmarshal single uuids
+type uuidJson struct {
+	Id uuid.UUID `json:"id"`
+}
+
 // POST: /room/
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
 	}
-	var pId uuid.UUID
+	var pId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&pId)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
-	owner := game.Players[pId]
+	owner := game.Players[pId.Id]
 	if owner == nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -43,7 +48,7 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
 	}
-	var jId uuid.UUID
+	var jId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&jId)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -67,7 +72,7 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	joining := game.Players[jId]
+	joining := game.Players[jId.Id]
 	if joining == nil {
 		http.Error(w, "Bad reqeust", http.StatusBadRequest)
 		return
@@ -84,7 +89,7 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
 	}
-	var lId uuid.UUID
+	var lId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&lId)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -108,7 +113,7 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	leaving := game.Players[lId]
+	leaving := game.Players[lId.Id]
 	if leaving == nil {
 		http.Error(w, "Bad reqeust", http.StatusBadRequest)
 		return
@@ -139,7 +144,7 @@ func Start(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
 	}
-	var pId uuid.UUID
+	var pId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&pId)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -163,7 +168,7 @@ func Start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if pId != room.Owner.Id {
+	if pId.Id != room.Owner.Id {
 		http.Error(w, "Not the owner", http.StatusForbidden)
 		return
 	}

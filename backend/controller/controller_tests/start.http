@@ -1,0 +1,6 @@
+POST http://localhost:8080/room/a21d17a7-9cd1-461f-a31e-d9321f219538 HTTP/1.1
+content-type: application/json
+
+{
+    "id": "c146526d-60af-4a9d-a286-044aa206286f"
+}
