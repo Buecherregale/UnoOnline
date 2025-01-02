@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"uno_online/game"
-	"uno_online/models"
+	"uno_online/api/data"
+	"uno_online/api/models"
 
 	"github.com/google/uuid"
 )
@@ -24,7 +24,7 @@ func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := uuid.New()
-	game.Players[id] = &models.Player{Id: id, Name: p.Name}
+	data.Players[id] = &models.Player{Id: id, Name: p.Name}
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(uuidJson{Id: id})
