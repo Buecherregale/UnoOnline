@@ -7,20 +7,20 @@ export class RoomFetches {
         this.UUID = UUID;
     }
 
-    async createRoom(name: string, baseURL: string) {
-        /*const { data, error} = await useFetch('/api/player', {
+    async createRoom(playerID: string, baseURL: string) {
+        const { data: room, error} = await useFetch('/room', {
                 method: 'POST',
-                body: JSON.stringify({
-                    name,
-                }),
-                baseURL : baseURL
+                body: {
+                    id: playerID,
+                },
+                baseURL : baseURL,
             }
         )
         if (error) {
             throw error.value
         } else {
-            return data.value
-        }*/
-        return "TestPlayerUUID";
+            console.log(room)
+            console.log(room.value)
+        }
     }
 }

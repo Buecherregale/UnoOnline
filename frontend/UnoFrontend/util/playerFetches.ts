@@ -1,16 +1,16 @@
 export const playerFetches = async (name: string, baseURL: string) => {
-    /*const { data, error} = await useFetch('/api/player', {
+    const { data: playerID, error} = await useFetch('/player', {
             method: 'POST',
-            body: JSON.stringify({
-                name,
-            }),
-            baseURL : baseURL
+            body: {
+                name: name,
+            },
+            baseURL : baseURL,
+            transform:(_playerID: any) => _playerID.id,
         }
     )
     if (error) {
         throw error.value
     } else {
-        return data.value
-    }*/
-    return "TestPlayerUUID";
+        return playerID
+    }
 }
