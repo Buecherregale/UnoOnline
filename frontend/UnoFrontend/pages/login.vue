@@ -1,14 +1,30 @@
-<script setup>
-import {playerFetches} from "~/util/playerFetches.ts";
-
+<script setup lang="ts">
 let name = ref("")
+
+const playerFetches = async (name: string) => {
+  try {
+    return await $fetch('/api/playerID', {
+          method: 'POST',
+          body: {
+            name: name,
+          },
+        }
+    );
+  } catch (error) {
+    console.error('Error communicating with internal API:', error);
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to communicate with internal API',
+    });
+  }
+}
 
 async function handleSubmit() {
   if (name.value.trim()) {
-    alert(`Hello, ${name.value}!`); // You can replace this with any action
-    const playerUUID = await playerFetches(name.value, "localhost");
+    const playerUUID = await playerFetches(name.value);
     const playerUUIDCookie = useCookie('playerUUID');
     playerUUIDCookie.value = playerUUID;
+    navigateTo("/hostOrJoin")
   } else {
     alert('Please enter a valid name.');
   }
