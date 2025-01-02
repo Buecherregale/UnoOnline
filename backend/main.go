@@ -15,6 +15,7 @@ func Router() *http.ServeMux {
 	mux.HandleFunc("POST /player", controller.CreatePlayer)
 	mux.HandleFunc("POST /room", controller.CreateRoom)
 	mux.HandleFunc("POST /room/{rId}", controller.Start)
+	mux.HandleFunc("GET /room/{rId}", controller.GetRoom)
 	mux.HandleFunc("POST /room/{rId}/players", controller.JoinRoom)
 	mux.HandleFunc("DELETE /room/{rId}/players", controller.LeaveRoom)
 

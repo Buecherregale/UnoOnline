@@ -175,3 +175,26 @@ func Start(w http.ResponseWriter, r *http.Request) {
 
 	// start via websocket
 }
+
+// GET: /room/{id}/
+func GetRoom(w http.ResponseWriter, r *http.Request) {
+	rId, err := util.ExtractUrlParam(r.URL.Path, 2)
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	asUUID, err := uuid.Parse(rId)
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	room := game.Rooms[asUUID]
+	if room == nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(room)
+}
