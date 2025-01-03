@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import type {Player} from "~/util/models";
+
 let name = ref("")
 
-const playerFetches = async (name: string) => {
+const playerFetches = async (name: string) : Promise<Player> => {
   try {
     return await $fetch('/api/playerID', {
           method: 'POST',
@@ -21,9 +23,9 @@ const playerFetches = async (name: string) => {
 
 async function handleSubmit() {
   if (name.value.trim()) {
-    const playerUUID = await playerFetches(name.value);
-    const playerUUIDCookie = useCookie('playerUUID');
-    playerUUIDCookie.value = playerUUID;
+    const player = await playerFetches(name.value);
+    const playerUUIDCookie = useCookie<Player>('playerUUID');
+    playerUUIDCookie.value = player;
     navigateTo("/hostOrJoin")
   } else {
     alert('Please enter a valid name.');
