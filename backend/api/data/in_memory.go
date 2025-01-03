@@ -1,7 +1,7 @@
-package game
+package data
 
 import (
-	"uno_online/models"
+	"uno_online/api/models"
 
 	"github.com/google/uuid"
 )

@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"uno_online/game"
-	"uno_online/models"
+
+	"uno_online/api/data"
+	"uno_online/api/models"
+	"uno_online/api/ws"
 	"uno_online/util"
 
 	"github.com/google/uuid"
@@ -19,9 +21,6 @@ type uuidJson struct {
 
 // POST: /room/
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
-	}
 	var pId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&pId)
 	if err != nil {
@@ -29,16 +28,17 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	owner := game.Players[pId.Id]
+	owner := data.Players[pId.Id]
 	if owner == nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
 	rId := uuid.New()
 	room := models.Room{Id: rId, Players: []models.Player{*owner}, Owner: *owner}
 
-	game.Rooms[rId] = &room
+	data.Rooms[rId] = &room
+	ws.WsServer.CreateRoom(rId, nil)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(room)
@@ -46,9 +46,6 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 
 // POST: /room/{id}/players
 func JoinRoom(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
-	}
 	var jId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&jId)
 	if err != nil {
@@ -67,15 +64,15 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room := game.Rooms[asUUID]
+	room := data.Rooms[asUUID]
 	if room == nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
-	joining := game.Players[jId.Id]
+	joining := data.Players[jId.Id]
 	if joining == nil {
-		http.Error(w, "Bad reqeust", http.StatusBadRequest)
+		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 	if slices.Contains(room.Players, *joining) {
@@ -91,9 +88,6 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 // Delete: /room/{id}/players/
 func LeaveRoom(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
-	}
 	var lId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&lId)
 	if err != nil {
@@ -115,14 +109,14 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room := game.Rooms[asUUID]
+	room := data.Rooms[asUUID]
 	if room == nil {
 		fmt.Println(err)
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
-	leaving := game.Players[lId.Id]
+	leaving := data.Players[lId.Id]
 	if leaving == nil {
 		fmt.Println(err)
 		http.Error(w, "not found", http.StatusNotFound)
@@ -141,19 +135,17 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 			next = next % len(room.Players)
 			room.Owner = room.Players[next]
 		} else {
-			game.Rooms[room.Id] = nil
+			data.Rooms[room.Id] = nil
 			return
 		}
 	}
 
 	room.Players = append(room.Players[:leaveIndex], room.Players[leaveIndex+1:]...)
+	ws.WsServer.RemovePlayer(room.Id, leaving.Id)
 }
 
 // POST: /room/{id}/
 func Start(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
-	}
 	var pId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&pId)
 	if err != nil {
@@ -172,7 +164,7 @@ func Start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room := game.Rooms[asUUID]
+	room := data.Rooms[asUUID]
 	if room == nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
@@ -199,7 +191,7 @@ func GetRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room := game.Rooms[asUUID]
+	room := data.Rooms[asUUID]
 	if room == nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
