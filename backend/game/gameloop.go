@@ -16,19 +16,36 @@ type GameState struct {
 	Players []*GamePlayer
 	Deck    *Deck
 	Stack   *Stack
-	Winner  *GamePlayer
-
-	currI     int
+	Winner  *GamePlayer 
+  CurrDir int
+  CurrI   int
+	
 	listeners []CardPlayEventListener
 }
 
 func (state *GameState) NextPlayer() {
-	state.currI += 1
-	state.currI %= len(state.Players)
+	state.CurrI += state.CurrDir
+	state.CurrI %= len(state.Players)
+}
+
+func (state *GameState) PeekNextPlayer() *GamePlayer {
+  next := state.CurrI + state.CurrDir
+  next %= len(state.Players)
+  return state.Players[next]
 }
 
 func (state *GameState) RegisterListener(listener CardPlayEventListener) {
 	state.listeners = append(state.listeners, listener)
+}
+
+func (state *GameState) DrawCards(target GamePlayer, amount int) {
+  for range amount {
+    target.Hand = append(target.Hand, state.Deck.Draw())
+  }
+}
+
+func PromptChoice[T any](target GamePlayer, choices []T) T {
+  return choices[0]
 }
 
 func StartRoom(room *models.Room, cards []Card, listeners []CardPlayEventListener) GameState {
