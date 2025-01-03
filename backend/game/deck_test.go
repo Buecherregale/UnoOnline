@@ -1,4 +1,4 @@
-package uno
+package game
 
 import (
 	"testing"

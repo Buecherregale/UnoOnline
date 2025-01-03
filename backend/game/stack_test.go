@@ -1,4 +1,4 @@
-package uno
+package game
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ type SimpleCard struct {
 	value int
 }
 
-func (c SimpleCard) matches(bot Card) bool {
+func (c SimpleCard) Matches(bot Card) bool {
 	o, ok := bot.(SimpleCard)
 	return ok && c.value == o.value
 }
