@@ -1,0 +1,17 @@
+BROADCAST
+
+Spieler X spielt Karte Y
+Spieler X ist an der Reihe
+Spieler X hat gewonnen
+Spieler X zieht Y Karten
+Spieler X setzt aus
+Spieler X dreht Richtung
+Spieler X wünscht sich Farbe Y
+
+PRIVAT
+Prompts:
+    Welche Karte 
+    Welche Farbe
+
+Infos:
+    Karten A, B, etc. gezogen 

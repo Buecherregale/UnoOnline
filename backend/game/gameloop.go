@@ -1,52 +1,8 @@
 package game
 
-import "uno_online/api/models"
-
-type CardPlayEventListener interface {
-	OnCardPlayed(gp GamePlayer, card Card, state GameState)
-}
-
-type GamePlayer struct {
-	p    *models.Player
-	Hand []Card
-}
-
-type GameState struct {
-	Room    *models.Room
-	Players []*GamePlayer
-	Deck    *Deck
-	Stack   *Stack
-	Winner  *GamePlayer 
-  CurrDir int
-  CurrI   int
-	
-	listeners []CardPlayEventListener
-}
-
-func (state *GameState) NextPlayer() {
-	state.CurrI += state.CurrDir
-	state.CurrI %= len(state.Players)
-}
-
-func (state *GameState) PeekNextPlayer() *GamePlayer {
-  next := state.CurrI + state.CurrDir
-  next %= len(state.Players)
-  return state.Players[next]
-}
-
-func (state *GameState) RegisterListener(listener CardPlayEventListener) {
-	state.listeners = append(state.listeners, listener)
-}
-
-func (state *GameState) DrawCards(target GamePlayer, amount int) {
-  for range amount {
-    target.Hand = append(target.Hand, state.Deck.Draw())
-  }
-}
-
-func PromptChoice[T any](target GamePlayer, choices []T) T {
-  return choices[0]
-}
+import (
+	"uno_online/api/models"
+)
 
 func StartRoom(room *models.Room, cards []Card, listeners []CardPlayEventListener) GameState {
 	gps := make([]*GamePlayer, len(room.Players))
@@ -61,6 +17,9 @@ func StartRoom(room *models.Room, cards []Card, listeners []CardPlayEventListene
 		Players:   gps,
 		Deck:      &deck,
 		Stack:     &Stack{},
+		Winner:    nil,
+		CurrI:     0,
+		CurrDir:   1,
 		listeners: listeners,
 	}
 
@@ -68,6 +27,13 @@ func StartRoom(room *models.Room, cards []Card, listeners []CardPlayEventListene
 	state.Stack.Play(state.Deck.Draw())
 
 	return state
+}
+
+func Run(state GameState) {
+	for state.Winner == nil {
+		//toMove := state.NextPlayer()
+
+	}
 }
 
 func deal(players []*GamePlayer, deck *Deck, cardCount int) {
