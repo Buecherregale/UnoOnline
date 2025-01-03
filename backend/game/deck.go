@@ -1,11 +1,11 @@
-package uno
+package game
 
 import (
 	"math/rand"
 )
 
 type Card interface {
-	matches(bot Card) bool
+	Matches(bot Card) bool
 }
 
 type Deck struct {
