@@ -11,9 +11,6 @@ import (
 )
 
 func CreatePlayer(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
-	}
 	var p struct {
 		Name string `json:"name"`
 	}

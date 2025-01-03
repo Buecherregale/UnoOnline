@@ -8,6 +8,7 @@ import (
 
 	"uno_online/api/data"
 	"uno_online/api/models"
+	"uno_online/api/ws"
 	"uno_online/util"
 
 	"github.com/google/uuid"
@@ -20,9 +21,6 @@ type uuidJson struct {
 
 // POST: /room/
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
-	}
 	var pId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&pId)
 	if err != nil {
@@ -32,7 +30,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 
 	owner := data.Players[pId.Id]
 	if owner == nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
@@ -40,6 +38,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	room := models.Room{Id: rId, Players: []models.Player{*owner}, Owner: *owner}
 
 	data.Rooms[rId] = &room
+	ws.WsServer.CreateRoom(rId, nil)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(room)
@@ -47,9 +46,6 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 
 // POST: /room/{id}/players
 func JoinRoom(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
-	}
 	var jId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&jId)
 	if err != nil {
@@ -76,7 +72,7 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 	joining := data.Players[jId.Id]
 	if joining == nil {
-		http.Error(w, "Bad reqeust", http.StatusBadRequest)
+		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 	if slices.Contains(room.Players, *joining) {
@@ -92,9 +88,6 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 // Delete: /room/{id}/players/
 func LeaveRoom(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
-	}
 	var lId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&lId)
 	if err != nil {
@@ -148,13 +141,11 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	room.Players = append(room.Players[:leaveIndex], room.Players[leaveIndex+1:]...)
+	ws.WsServer.RemovePlayer(room.Id, leaving.Id)
 }
 
 // POST: /room/{id}/
 func Start(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Wrong method", http.StatusMethodNotAllowed)
-	}
 	var pId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&pId)
 	if err != nil {

@@ -17,7 +17,7 @@ func main() {
 	FillTestData()
 
 	mux := Router()
-	server := ws.NewServer()
+	server := ws.WsServer
 
 	FillWsTestData(server)
 

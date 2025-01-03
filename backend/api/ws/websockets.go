@@ -3,7 +3,11 @@ package ws
 import (
 	"log"
 	"net/http"
+	"slices"
 	"sync"
+
+	"uno_online/api/data"
+	"uno_online/api/models"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -40,6 +44,8 @@ func NewServer() *Server {
 	}
 }
 
+var WsServer = NewServer()
+
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
@@ -70,6 +76,31 @@ func (s *Server) BroadcastMsg(roomId uuid.UUID, msg Message) {
 	room.broadcast <- msg
 }
 
+func (s *Server) RemovePlayer(roomId, playerId uuid.UUID) {
+	s.mutex.Lock()
+	room, exists := s.rooms[roomId]
+	s.mutex.Unlock()
+	if !exists {
+		log.Printf("Room %s does not exist\n", roomId)
+		return
+	}
+
+	room.mutex.Lock()
+	player, exists := room.players[playerId]
+	room.mutex.Unlock()
+
+	if !exists {
+		return
+	}
+
+	// Close the player's WebSocket connection.
+	player.conn.Close()
+
+	// Remove the player from the room.
+	room.RemovePlayer(player)
+	log.Printf("Player %s removed from room %s\n", playerId, roomId)
+}
+
 func (s *Server) SendMsg(roomId, playerId uuid.UUID, msg Message) {
 	s.mutex.Lock()
 	room, exists := s.rooms[roomId]
@@ -80,14 +111,14 @@ func (s *Server) SendMsg(roomId, playerId uuid.UUID, msg Message) {
 	}
 
 	room.mutex.Lock()
-	client, exists := room.players[playerId]
+	player, exists := room.players[playerId]
 	room.mutex.Unlock()
 	if !exists {
-		log.Printf("Client %s not found in room %s\n", playerId, roomId)
+		log.Printf("Player %s not found in room %s\n", playerId, roomId)
 		return
 	}
 
-	client.sendChan <- msg
+	player.sendChan <- msg
 }
 
 func (s *Server) ReceiveMsg(roomId uuid.UUID, handler MsgReceiver) {
@@ -119,13 +150,18 @@ func (s *Server) HandleConnection(w http.ResponseWriter, r *http.Request, roomId
 	}
 	s.mutex.Unlock()
 
+	ro := data.Rooms[roomId]
+	if slices.ContainsFunc(ro.Players, func(p models.Player) bool { return p.Id == playerId }) {
+		return
+	}
+
 	player := &WsPlayer{
 		id:       playerId,
 		conn:     conn,
 		sendChan: make(chan Message),
 	}
 
-	room.AddClient(player)
+	room.AddPlayer(player)
 	go player.ReadMessages(room)
 	go player.WriteMessages()
 }
@@ -134,6 +170,11 @@ func (s *Server) CreateRoom(roomId uuid.UUID, receiver MsgReceiver) {
 	s.mutex.Lock()
 	if s.rooms[roomId] != nil {
 		log.Printf("Room %s already exists\n", roomId)
+		return
+	}
+
+	if data.Rooms[roomId] == nil {
+		log.Printf("Room %s does not exist yet. Firstly create via rest\n", roomId)
 		return
 	}
 
@@ -149,13 +190,13 @@ func (s *Server) CreateRoom(roomId uuid.UUID, receiver MsgReceiver) {
 	s.mutex.Unlock()
 }
 
-func (room *WsRoom) AddClient(player *WsPlayer) {
+func (room *WsRoom) AddPlayer(player *WsPlayer) {
 	room.mutex.Lock()
 	room.players[player.id] = player
 	room.mutex.Unlock()
 }
 
-func (room *WsRoom) RemoveClient(player *WsPlayer) {
+func (room *WsRoom) RemovePlayer(player *WsPlayer) {
 	room.mutex.Lock()
 	delete(room.players, player.id)
 	close(player.sendChan)
@@ -165,8 +206,8 @@ func (room *WsRoom) RemoveClient(player *WsPlayer) {
 func (room *WsRoom) Run() {
 	for msg := range room.broadcast {
 		room.mutex.Lock()
-		for _, client := range room.players {
-			client.sendChan <- msg
+		for _, player := range room.players {
+			player.sendChan <- msg
 		}
 		room.mutex.Unlock()
 	}
@@ -174,7 +215,7 @@ func (room *WsRoom) Run() {
 
 func (player *WsPlayer) ReadMessages(room *WsRoom) {
 	defer func() {
-		room.RemoveClient(player)
+		room.RemovePlayer(player)
 		player.conn.Close()
 	}()
 
