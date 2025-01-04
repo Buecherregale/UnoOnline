@@ -76,7 +76,7 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if slices.Contains(room.Players, *joining) {
-		http.Error(w, "Already joined", http.StatusBadRequest)
+		http.Error(w, "Already joined", http.StatusConflict)
 		return
 	}
 
