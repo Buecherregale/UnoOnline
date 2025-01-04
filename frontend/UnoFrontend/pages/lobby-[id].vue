@@ -2,6 +2,10 @@
   import type { Room } from "~/util/models";
   import {getIDFromCookie} from "~/util/getIDFromCookie";
 
+  definePageMeta({
+    middleware: ['check-join'],
+  })
+
   const route = useRoute()
   let id = route.params.id
   let room = useState<Room>('room')
