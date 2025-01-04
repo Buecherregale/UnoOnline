@@ -18,7 +18,10 @@ export default defineEventHandler(async (event): Promise<Room> => {
 
         room = JSON.parse(externalResponse);
         return room;
-    } catch (error) {
+    } catch (error: any) {
+        if (error?.response?.status === 409) {
+            throw error;
+        }
         console.error('Error communicating with external API:', error);
         throw createError({
             statusCode: 500,
