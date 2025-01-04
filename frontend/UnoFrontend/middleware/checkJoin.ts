@@ -29,7 +29,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
                     }
                 );
                 console.log(responseRoom);
-                const room = useState('room',() => responseRoom);
+                useState('room',() => responseRoom);
                 navigateTo(`/lobby-${roomID}`);
             } catch (error: any) {
                 if (error?.response?.status === 409) {
