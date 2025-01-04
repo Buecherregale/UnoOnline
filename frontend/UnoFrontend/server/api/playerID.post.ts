@@ -1,6 +1,7 @@
 import {Player} from "~/util/models";
 
 export default defineEventHandler(async (event): Promise<Player> => {
+    const { apiBase } = useRuntimeConfig().public as { apiBase: string };
     const body = await readBody(event);
     const { name } = body;
     let player = {} as Player;
@@ -12,7 +13,7 @@ export default defineEventHandler(async (event): Promise<Player> => {
             body: {
                 name: name,
             },
-            baseURL: 'http://localhost:8080'
+            baseURL: apiBase,
         });
 
         player.id = JSON.parse(externalResponse).id;

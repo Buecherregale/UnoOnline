@@ -14,6 +14,10 @@ RUN npm install
 # Copy the entire project to the container
 COPY UnoFrontend/ .
 
+# Set environment variable explicitly
+ARG API_BASE_URL
+ENV API_BASE_URL=${API_BASE_URL}
+
 # Build the Nuxt app for production
 RUN npm run build
 

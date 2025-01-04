@@ -1,6 +1,7 @@
 import { Room } from "~/util/models";
 
 export default defineEventHandler(async (event): Promise<Room> => {
+    const { apiBase } = useRuntimeConfig().public as { apiBase: string };
     const roomID = getRouterParam(event, 'id')
     const body = await readBody(event);
     const { id } = body;
@@ -10,7 +11,7 @@ export default defineEventHandler(async (event): Promise<Room> => {
     try {
         const externalResponse: string = await $fetch(`/room/${roomID}/players`, {
             method: 'POST',
-            baseURL: 'http://localhost:8080',
+            baseURL: apiBase,
             body: {
                 id: id,
             },
