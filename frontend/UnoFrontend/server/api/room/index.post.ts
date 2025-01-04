@@ -1,6 +1,7 @@
 import { Room } from "~/util/models";
 
 export default defineEventHandler(async (event): Promise<Room> => {
+    const { apiBase } = useRuntimeConfig().public as { apiBase: string };
     const body = await readBody(event);
     const { id } = body;
     let room = {} as Room;
@@ -11,7 +12,7 @@ export default defineEventHandler(async (event): Promise<Room> => {
             body: {
                 id: id,
             },
-            baseURL: 'http://localhost:8080'
+            baseURL: apiBase,
         });
 
         room = JSON.parse(externalResponse);
