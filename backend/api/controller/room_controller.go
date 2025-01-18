@@ -9,6 +9,8 @@ import (
 	"uno_online/api/data"
 	"uno_online/api/models"
 	"uno_online/api/ws"
+	"uno_online/game"
+	"uno_online/uno"
 	"uno_online/util"
 
 	"github.com/google/uuid"
@@ -176,7 +178,11 @@ func Start(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// start via websocket
-	ws.Server.Rooms[room.Id].BroadcastMessage("StartMessage", nil)
+	if len(ws.Server.Rooms[room.Id].Players) != len(room.Players) {
+		http.Error(w, "Amount of players not maching. Connect all via Websocket", http.StatusConflict)
+		return
+	}
+	game.StartRoom(room, uno.UnoCards(), uno.UnoCardPlacedListeners())
 }
 
 // GET: /room/{id}/

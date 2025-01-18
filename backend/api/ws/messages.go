@@ -1,20 +1,24 @@
 package ws
 
-import "github.com/google/uuid"
+import (
+	"encoding/json"
 
-type CardPayload struct {
-	Value string `json:"value,omitempty"`
-	Color string `json:"color,omitempty"`
-}
+	"github.com/google/uuid"
+)
 
 type ErrorPayload struct {
 	Code    int    `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
+type GameStartPayload struct {
+	TopCard interface{} `json:"top_card,omitempty"`
+}
+
 type CardPlayedPayload struct {
 	PlayerId uuid.UUID   `json:"player_id,omitempty"`
-	Card     CardPayload `json:"card,omitempty"`
+	Name     string      `json:"name,omitempty"`
+	Card     interface{} `json:"card,omitempty"`
 }
 
 type PlayerTurnPayload struct {
@@ -33,39 +37,42 @@ type PlayerDrawsCardsPayload struct {
 	Amount   int       `json:"amount,omitempty"`
 }
 
-type PlayerSkippedPayload struct {
-	PlayerId uuid.UUID `json:"player_id,omitempty"`
-	Name     string    `json:"name,omitempty"`
+type PlayerSkippedPayload struct{}
+
+type DirectionChangedPayload struct {
+	Direction int `json:"direction,omitempty"`
 }
 
-type PlayerChangesDirectionPayload struct {
-	PlayerId  uuid.UUID `json:"player_id,omitempty"`
-	Name      string    `json:"name,omitempty"`
-	Direction int       `json:"direction,omitempty"`
-}
-
-type PlayerChosesColorPayload struct {
+type PlayerChoseColorPayload struct {
 	PlayerId uuid.UUID `json:"player_id,omitempty"`
 	Name     string    `json:"name,omitempty"`
-	Color    string    `json:"color,omitempty"`
+	Color    int       `json:"color,omitempty"`
 }
 
 type AskColorPayload struct {
-	Options []string `json:"options,omitempty"`
+	Options []int `json:"options,omitempty"`
 }
 
 type AnswerColorPayload struct {
-	Chosen string `json:"chosen,omitempty"`
+	Chosen int `json:"chosen,omitempty"`
 }
 
 type AskCardPayload struct {
-	Options []CardPayload `json:"options,omitempty"`
+	Options []interface{} `json:"options,omitempty"`
 }
 
 type AnswerCardPayload struct {
-	Card CardPayload `json:"card,omitempty"`
+	Card interface{} `json:"card,omitempty"`
 }
 
 type YouDrawCardPayload struct {
-	Cards []CardPayload `json:"cards,omitempty"`
+	Cards []interface{} `json:"cards,omitempty"`
+}
+
+func MsgToPayload[T any](message Message) (*T, bool) {
+	var payload T
+	if err := json.Unmarshal(message.Payload, payload); err != nil {
+		return &payload, true
+	}
+	return nil, false
 }
