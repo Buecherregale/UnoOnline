@@ -45,6 +45,7 @@ Documentation for the Rest and Websocket API.
   - **Error Responses:** 
     - 403 - Player is not the owner. 
     - 404 - Room does not exist or Player does not exist.
+    - 409 - The Number of Players in the Room is not equal to those connected to the Websocket
 
 ---
 

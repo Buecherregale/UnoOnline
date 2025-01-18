@@ -111,7 +111,8 @@ func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, room
 	s.mutex.Unlock()
 
 	ro := data.Rooms[roomId]
-	if slices.ContainsFunc(ro.Players, func(p models.Player) bool { return p.Id == playerId }) {
+	if !slices.ContainsFunc(ro.Players, func(p models.Player) bool { return p.Id == playerId }) {
+		log.Printf("Player not in room\n")
 		return
 	}
 
