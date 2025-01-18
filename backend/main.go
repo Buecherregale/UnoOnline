@@ -51,7 +51,7 @@ func FillWsTestData(server *ws.Server) {
 	room1iD := uuid.MustParse("4d3e97bf-cc2e-4af0-9397-2a0e3b331c6f")
 
 	receiver := func(roomId, playerId uuid.UUID, msg ws.Message) {
-		log.Printf("Message send to room %s\nby player %s:\n%s", roomId, playerId, msg.Msg)
+		log.Printf("Message send to room %s\nby player %s:\n%s", roomId, playerId, msg.Type)
 		server.BroadcastMsg(roomId, msg)
 		server.SendMsg(roomId, playerId, msg)
 	}
