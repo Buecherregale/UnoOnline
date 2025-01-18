@@ -38,7 +38,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	room := models.Room{Id: rId, Players: []models.Player{*owner}, Owner: *owner}
 
 	data.Rooms[rId] = &room
-	ws.WsServer.CreateRoom(rId, nil)
+	ws.Server.CreateRoom(rId, nil)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(room)
@@ -141,8 +141,7 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	room.Players = append(room.Players[:leaveIndex], room.Players[leaveIndex+1:]...)
-	wsr, _ := ws.WsServer.GetRoomById(room.Id)
-	wsr.RemovePlayer(leaving.Id)
+	ws.Server.Rooms[room.Id].RemovePlayer(leaving.Id)
 }
 
 // POST: /room/{id}/
@@ -177,8 +176,7 @@ func Start(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// start via websocket
-	wsr, _ := ws.WsServer.GetRoomById(room.Id)
-	wsr.BroadcastMessage("StartMessage", nil)
+	ws.Server.Rooms[room.Id].BroadcastMessage("StartMessage", nil)
 }
 
 // GET: /room/{id}/
