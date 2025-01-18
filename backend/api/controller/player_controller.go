@@ -21,8 +21,9 @@ func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := uuid.New()
-	data.Players[id] = &models.Player{Id: id, Name: p.Name}
+	player := models.Player{Id: id, Name: p.Name}
+	data.Players[id] = &player
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(uuidJson{Id: id})
+	json.NewEncoder(w).Encode(player)
 }
