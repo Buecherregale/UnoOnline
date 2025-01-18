@@ -40,7 +40,7 @@ func plusTwoPlayed(gp *game.GamePlayer, card *game.Card, state *game.GameState) 
 }
 
 func wildcardPlayed(gp *game.GamePlayer, card *game.Card, state *game.GameState) {
-	u, _ := (*card).(UnoCard)
+	u, _ := (*card).(*UnoCard)
 	if u.Color != Black || u.Value != Wildcard {
 		return
 	}
@@ -62,7 +62,7 @@ func wildcardPlayed(gp *game.GamePlayer, card *game.Card, state *game.GameState)
 }
 
 func wildcard4Played(gp *game.GamePlayer, card *game.Card, state *game.GameState) {
-	u, _ := (*card).(UnoCard)
+	u, _ := (*card).(*UnoCard)
 	if u.Color != Black || u.Value != Wildcard4 {
 		return
 	}
