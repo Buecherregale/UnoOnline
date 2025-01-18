@@ -33,29 +33,29 @@ type WsPlayer struct {
 type WsRoom struct {
 	id        uuid.UUID
 	broadcast chan Message
-	players   map[uuid.UUID]*WsPlayer
+	Players   map[uuid.UUID]*WsPlayer
 	handler   MsgReceiver
 	mutex     sync.Mutex
 }
 
-type Server struct {
-	rooms map[uuid.UUID]*WsRoom
+type WsServer struct {
+	Rooms map[uuid.UUID]*WsRoom
 	mutex sync.Mutex
 }
 
-func NewServer() *Server {
-	return &Server{
-		rooms: make(map[uuid.UUID]*WsRoom),
+func NewServer() *WsServer {
+	return &WsServer{
+		Rooms: make(map[uuid.UUID]*WsRoom),
 	}
 }
 
-var WsServer = NewServer()
+var Server = NewServer()
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-func HandleConnectMsg(w http.ResponseWriter, r *http.Request, server *Server) {
+func HandleConnectMsg(w http.ResponseWriter, r *http.Request, server *WsServer) {
 	roomId, err := uuid.Parse(r.URL.Query().Get("roomId"))
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -69,9 +69,9 @@ func HandleConnectMsg(w http.ResponseWriter, r *http.Request, server *Server) {
 	server.handleConnection(w, r, roomId, playerId)
 }
 
-func (s *Server) CreateRoom(roomId uuid.UUID, receiver MsgReceiver) *WsRoom {
+func (s *WsServer) CreateRoom(roomId uuid.UUID, receiver MsgReceiver) *WsRoom {
 	s.mutex.Lock()
-	if s.rooms[roomId] != nil {
+	if s.Rooms[roomId] != nil {
 		log.Printf("Room %s already exists\n", roomId)
 		return nil
 	}
@@ -83,26 +83,19 @@ func (s *Server) CreateRoom(roomId uuid.UUID, receiver MsgReceiver) *WsRoom {
 
 	room := &WsRoom{
 		id:        roomId,
-		players:   make(map[uuid.UUID]*WsPlayer),
+		Players:   make(map[uuid.UUID]*WsPlayer),
 		broadcast: make(chan Message),
 		handler:   receiver,
 	}
 
-	s.rooms[roomId] = room
+	s.Rooms[roomId] = room
 	go room.Run()
 	s.mutex.Unlock()
 
 	return room
 }
 
-func (s *Server) GetRoomById(roomId uuid.UUID) (*WsRoom, bool) {
-	s.mutex.Lock()
-	r, e := s.rooms[roomId]
-	s.mutex.Unlock()
-	return r, e
-}
-
-func (s *Server) handleConnection(w http.ResponseWriter, r *http.Request, roomId, playerId uuid.UUID) {
+func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, roomId, playerId uuid.UUID) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Upgrade error:", err)
@@ -110,7 +103,7 @@ func (s *Server) handleConnection(w http.ResponseWriter, r *http.Request, roomId
 	}
 
 	s.mutex.Lock()
-	room, exists := s.rooms[roomId]
+	room, exists := s.Rooms[roomId]
 	if !exists {
 		log.Printf("Room %s does not exist\n", roomId)
 		return

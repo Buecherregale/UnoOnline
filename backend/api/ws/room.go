@@ -22,7 +22,7 @@ func (room *WsRoom) BroadcastMessage(msgType string, payload interface{}) {
 	room.mutex.Lock()
 	defer room.mutex.Unlock()
 
-	for _, player := range room.players {
+	for _, player := range room.Players {
 		select {
 		case player.sendChan <- message:
 		default:
@@ -33,27 +33,27 @@ func (room *WsRoom) BroadcastMessage(msgType string, payload interface{}) {
 
 func (room *WsRoom) RemovePlayer(playerId uuid.UUID) {
 	room.mutex.Lock()
-	player, exists := room.players[playerId]
+	player, exists := room.Players[playerId]
 	if !exists {
 		log.Printf("requested player %s does not exist in room %s\n", playerId, room.id)
 		return
 	}
 	player.conn.Close()
-	delete(room.players, playerId)
+	delete(room.Players, playerId)
 	close(player.sendChan)
 	room.mutex.Unlock()
 }
 
 func (room *WsRoom) AddPlayer(player *WsPlayer) {
 	room.mutex.Lock()
-	room.players[player.id] = player
+	room.Players[player.id] = player
 	room.mutex.Unlock()
 }
 
 func (room *WsRoom) Run() {
 	for msg := range room.broadcast {
 		room.mutex.Lock()
-		for _, player := range room.players {
+		for _, player := range room.Players {
 			player.sendChan <- msg
 		}
 		room.mutex.Unlock()

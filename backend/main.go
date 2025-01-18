@@ -17,12 +17,11 @@ func main() {
 	FillTestData()
 
 	mux := Router()
-	server := ws.WsServer
 
-	FillWsTestData(server)
+	FillWsTestData(ws.Server)
 
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		ws.HandleConnectMsg(w, r, server)
+		ws.HandleConnectMsg(w, r, ws.Server)
 	})
 
 	log.SetOutput(os.Stdout)
@@ -46,14 +45,15 @@ func FillTestData() {
 	data.Rooms[room1iD] = &models.Room{Id: room1iD, Owner: p1, Players: []models.Player{p1}}
 }
 
-func FillWsTestData(server *ws.Server) {
+func FillWsTestData(server *ws.WsServer) {
 	// data to allow for easy testing e.g. using websocat
 	room1iD := uuid.MustParse("4d3e97bf-cc2e-4af0-9397-2a0e3b331c6f")
+	wsRoom, _ := server.Rooms[room1iD]
 
 	receiver := func(roomId, playerId uuid.UUID, msg ws.Message) {
 		log.Printf("Message send to room %s\nby player %s:\n%s", roomId, playerId, msg.Type)
-		server.BroadcastMsg(roomId, msg)
-		server.SendMsg(roomId, playerId, msg)
+		wsRoom.BroadcastMessage(msg.Type, msg.Payload)
+		wsRoom.Players[playerId].SendMessage(msg.Type, msg.Payload)
 	}
 	server.CreateRoom(room1iD, receiver)
 }
