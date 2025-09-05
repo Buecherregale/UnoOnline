@@ -11,6 +11,8 @@ The backend has 2 distinct communication channels:
 1. Broadcast: Sends the message to all players, the info is not sensitive to the players.
 1. Single Player: Sends the message to a single player. May contain things like actual cards the player has.
 
+**Note:** The variable names below are serialized in snake_case. E.g. `PlayerId` is serialized as `player_id`. Exact names can be read from the go json tags in [messages](/backend/api/ws/messages.go).
+
 ## Payloads
 The payloads send and received by the websocket. 
 
