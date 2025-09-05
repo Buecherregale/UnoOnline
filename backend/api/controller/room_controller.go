@@ -83,6 +83,11 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	room.Players = append(room.Players, *joining)
+	wsRoom := ws.Server.Rooms[room.Id]
+	wsRoom.BroadcastMessage("RoomJoinPayload", ws.RoomJoinPayload{
+		PlayerId: joining.Id, 
+		Name: joining.Name,
+	})
 
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(room)
@@ -143,6 +148,14 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	room.Players = append(room.Players[:leaveIndex], room.Players[leaveIndex+1:]...)
+	
+	wsRoom := ws.Server.Rooms[room.Id]
+	wsRoom.BroadcastMessage("RoomLeftPayload", ws.RoomLeftPayload {
+		PlayerId: leaving.Id,
+		Name: leaving.Name,
+		OwnerId: room.Owner.Id,
+		OwnerName: room.Owner.Name,
+	})
 	ws.Server.Rooms[room.Id].RemovePlayer(leaving.Id)
 }
 
@@ -182,6 +195,10 @@ func Start(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Amount of players not maching. Connect all via Websocket", http.StatusConflict)
 		return
 	}
+
+	ws.Server.Rooms[room.Id].BroadcastMessage("RoomStartPayload", ws.RoomStartPayload {
+		Players: room.Players,
+	})
 	game.StartRoom(room, uno.UnoCards(), uno.UnoCardPlacedListeners())
 }
 
