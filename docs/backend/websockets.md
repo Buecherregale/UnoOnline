@@ -123,3 +123,25 @@ The payloads send and received by the websocket.
 
 **Note:** This is different from [GameStart](#gamestart), which is send, when the card game itself starts.
 
+### RoomJoin
+**Send to:** All players  
+**Send when:** A new player joins the room.  
+**Structure:**  
+- `PlayerId` (UUID): The id of the player joining.
+- `Name` (string): The name of the player joining.
+
+### RoomLeft
+**Send to:** All players  
+**Send when:** A player leaves the room.  
+**Structure:**  
+- `PlayerId` (UUID): The id of the player leaving.
+- `Name` (string): The name of the player leaving.
+- `OwnerId` (UUID): The id of the player owning the room. The room owner is changed if the old one is leaving.
+- `OwnerName` (UUID): The name of the owner.
+
+### RoomStart
+**Send to:** All players  
+**Send when:** A room is started via [Start](/docs/backend/restapi.md#start).  
+**Structure:**  
+- `Players` (\[\][Player](/docs/backend/models.md#player)): The players in the room.
+
