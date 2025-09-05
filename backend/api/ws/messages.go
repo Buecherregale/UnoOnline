@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"uno_online/api/models"
 
 	"uno_online/api/dtos"
 )
