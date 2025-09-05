@@ -133,3 +133,4 @@ yarn-error.log
 
 README.md
 tsconfig.json
+nuxt.config.ts

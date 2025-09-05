@@ -9,30 +9,30 @@ import { Room } from "~/util/models";
  * @returns Promise<Room> - Room data with current players
  */
 export default defineEventHandler(async (event): Promise<Room> => {
-    // Get backend API URL from runtime config
-    const { apiBase } = useRuntimeConfig().public as { apiBase: string };
+  // Get backend API URL from runtime config
+  const { apiBase } = useRuntimeConfig().public as { apiBase: string };
 
-    // Extract room ID from URL parameters
-    const id = getRouterParam(event, 'id')
+  // Extract room ID from URL parameters
+  const id = getRouterParam(event, "id");
 
-    // Initialize room object
-    let room = {} as Room;
+  // Initialize room object
+  let room = {} as Room;
 
-    try {
-        // Fetch room data from Go backend
-        const externalResponse: string = await $fetch(`/room/${id}`, {
-            method: 'GET',
-            baseURL: apiBase,
-        });
+  try {
+    // Fetch room data from Go backend
+    const externalResponse: string = await $fetch(`/room/${id}`, {
+      method: "GET",
+      baseURL: apiBase,
+    });
 
-        // Parse and return room data
-        room = JSON.parse(externalResponse);
-        return room;
-    } catch (error) {
-        console.error('Error communicating with external API:', error);
-        throw createError({
-            statusCode: 500,
-            message: 'Failed to communicate with external API',
-        });
-    }
+    // Parse and return room data
+    room = JSON.parse(externalResponse);
+    return room;
+  } catch (error) {
+    console.error("Error communicating with external API:", error);
+    throw createError({
+      statusCode: 500,
+      message: "Failed to communicate with external API",
+    });
+  }
 });

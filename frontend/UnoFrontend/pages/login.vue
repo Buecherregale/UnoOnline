@@ -1,34 +1,33 @@
 <script setup lang="ts">
-import type {Player} from "~/util/models";
+import type { Player } from "~/util/models";
 
-let name = ref("")
+let name = ref("");
 
-const playerFetches = async (name: string) : Promise<Player> => {
+const playerFetches = async (name: string): Promise<Player> => {
   try {
-    return await $fetch('/api/playerID', {
-          method: 'POST',
-          body: {
-            name: name,
-          },
-        }
-    );
+    return await $fetch("/api/playerID", {
+      method: "POST",
+      body: {
+        name: name,
+      },
+    });
   } catch (error) {
-    console.error('Error communicating with internal API:', error);
+    console.error("Error communicating with internal API:", error);
     throw createError({
       statusCode: 500,
-      message: 'Failed to communicate with internal API',
+      message: "Failed to communicate with internal API",
     });
   }
-}
+};
 
 async function handleSubmit() {
   if (name.value.trim()) {
     const player = await playerFetches(name.value);
-    const playerUUIDCookie = useCookie<Player>('playerUUID');
+    const playerUUIDCookie = useCookie<Player>("playerUUID");
     playerUUIDCookie.value = player;
-    navigateTo("/hostOrJoin")
+    navigateTo("/hostOrJoin");
   } else {
-    alert('Please enter a valid name.');
+    alert("Please enter a valid name.");
   }
 }
 </script>
@@ -37,10 +36,10 @@ async function handleSubmit() {
   <div class="name-input-component">
     <p>Please enter a name:</p>
     <input
-        type="text"
-        v-model="name"
-        @keyup.enter="handleSubmit"
-        placeholder="Type your name here"
+      type="text"
+      v-model="name"
+      @keyup.enter="handleSubmit"
+      placeholder="Type your name here"
     />
     <button @click="handleSubmit">Submit</button>
   </div>
