@@ -42,7 +42,7 @@ async function confirmedJoin() {
         body: {
           id: id,
         },
-      },
+      }
     );
     console.log(responseRoom);
     const room = useState("room", () => responseRoom);

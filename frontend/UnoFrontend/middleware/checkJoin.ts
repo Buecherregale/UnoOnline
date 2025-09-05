@@ -46,7 +46,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
             body: {
               id: playerID,
             },
-          },
+          }
         );
         console.log(responseRoom);
 
