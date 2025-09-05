@@ -65,7 +65,19 @@
 - **Request Body:**
   - `id` (UUID): The id of the player. 
 - **Response:**
-  - **200 OK:** Player removed from room and websocket.
+  - `200 - OK`: Player removed from room and websocket.
   - **Error Responses:** 
     - `404 - Not found`: Room or player does not exist. 
+### Websocket
+**ANY** `/ws`
+- **Description:** Connects the player to the websocket of the room.
+- **URL Parameters:**
+  - `roomId` (UUID): The unique room identifier.
+  - `playerId` (UUID): The unique player identifier.
+- **Response:**
+  - `OK`: Connection upgrade to websocket.
+  - **Error Responses:**
+    - `400 - Bad request`: Invalid url paramters.
+    - `404 - Not found`: Room or player does not exist.
+    - `403 - Forbidden`: Player did not join the room via (Join)[#Join].
 
