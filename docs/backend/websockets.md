@@ -1,6 +1,12 @@
 # Websocket
 Communication of game events after a room has been started is transported via websockets.
-The messages carry payload containing the game data.
+The messages are build like this:
+```go
+struct message {
+  Type    string  // the name of the payload type (the tags below + `Payload`)
+  Payload any     // the struct instance from below
+}
+```
 The backend has 2 distinct communication channels:
 1. Broadcast: Sends the message to all players, the info is not sensitive to the players.
 1. Single Player: Sends the message to a single player. May contain things like actual cards the player has.
@@ -96,4 +102,26 @@ The payloads send and received by the websocket.
 **Send when:** The player has to draw card(s).  
 **Structure:**  
 - `Cards` ([]any): The cards drawn by the player.  
+
+### RoomJoin
+**Send to:** All players  
+**Send when:** A new player joins the room.  
+**Structure:**  
+- `PlayerId` (UUID): The id of the player joining.
+- `Name` (string): The name of the player joining.
+
+### RoomLeft
+**Send to:** All players  
+**Send when:** A player leaves the room.  
+**Structure:**  
+- `PlayerId` (UUID): The id of the player leaving.
+- `Name` (string): The name of the player leaving.
+- `OwnerId` (UUID): The id of the player owning the room. The room owner is changed if the old one is leaving.
+- `OwnerName` (UUID): The name of the owner.
+
+### RoomStart
+**Send to:** All players  
+**Send when:** A room is started via [Start](/docs/backend/restapi.md#start).  
+**Structure:**  
+- `Players` (\[\][Player](/docs/backend/models.md#player)): The players in the room.
 

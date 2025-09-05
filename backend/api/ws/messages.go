@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"uno_online/api/models"
 
 	"github.com/google/uuid"
 )
@@ -40,33 +41,49 @@ type PlayerDrawsCardsPayload struct {
 type PlayerSkippedPayload struct{}
 
 type DirectionChangedPayload struct {
-	Direction int 		`json:"direction,omitempty"`
+	Direction int 		  `json:"direction,omitempty"`
 }
 
 type PlayerChoseColorPayload struct {
-	PlayerId uuid.UUID `json:"player_id,omitempty"`
-	Name     string    `json:"name,omitempty"`
-	Color    int       `json:"color,omitempty"`
+	PlayerId uuid.UUID  `json:"player_id,omitempty"`
+	Name     string     `json:"name,omitempty"`
+	Color    int        `json:"color,omitempty"`
 }
 
 type AskColorPayload struct {
-	Options []int 		`json:"options,omitempty"`
+	Options []int 		  `json:"options,omitempty"`
 }
 
 type AnswerColorPayload struct {
-	Chosen int 				`json:"chosen,omitempty"`
+	Chosen int 					`json:"chosen,omitempty"`
 }
 
 type AskCardPayload struct {
-	Options []any		 `json:"options,omitempty"`
+	Options []any		 		`json:"options,omitempty"`
 }
 
 type AnswerCardPayload struct {
-	Card any				 `json:"card,omitempty"`
+	Card any				 		`json:"card,omitempty"`
 }
 
 type YouDrawCardPayload struct {
-	Cards []any			 `json:"cards,omitempty"`
+	Cards []any			 		`json:"cards,omitempty"`
+}
+
+type RoomJoinPayload struct {
+	PlayerId uuid.UUID	`json:"player_id,omitempty"`
+	Name 		 string 		`json:"name,omitempty"`
+}
+
+type RoomLeftPayload struct {
+	PlayerId 	uuid.UUID `json:"player_id,omitempty"`
+	Name		 	string 		`json:"name,omitempty"`
+	OwnerId	 	uuid.UUID `json:"owner_id,omitempty"`
+	OwnerName string		`json:"owner_name,omitempty"`
+}
+
+type RoomStartPayload struct { 
+	Players  	[]models.Player  		`json:"players,omitempty"`
 }
 
 func MsgToPayload[T any](message Message) (*T, bool) {
