@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Room } from "~/util/models";
 import { getIDFromCookie } from "~/util/getIDFromCookie";
-import {process} from "std-env";
+import { process } from "std-env";
 
 const showPopupHost = ref(false);
 const showPopupJoin = ref(false);
