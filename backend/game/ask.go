@@ -7,9 +7,9 @@ import (
 )
 
 func AskCard(player *GamePlayer) (*Card, bool) {
-	cps := make([]interface{}, 0)
+	cps := make([]any, 0)
 	for _, c := range player.Hand {
-		var i interface{} = c
+		var i any = c
 		cps = append(cps, i)
 	}
 
@@ -32,11 +32,8 @@ func AskCard(player *GamePlayer) (*Card, bool) {
 		}
 		card := p.Card.(Card)
 
-		for _, handCard := range player.Hand {
-			if handCard == card {
-				chosen = card
-				break
-			}
+		if slices.Contains(player.Hand, card) {
+			chosen = card 
 		}
 		player.WsP.SendError(403, "invalid card chosen")
 	}
