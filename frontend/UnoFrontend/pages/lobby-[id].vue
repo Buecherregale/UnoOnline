@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Room } from "~/util/models";
 import { getIDFromCookie } from "~/util/getIDFromCookie";
-import {process} from "std-env";
+import { process } from "std-env";
 
 definePageMeta({
   middleware: ["check-join"],
@@ -30,12 +30,16 @@ const isHost = useState<boolean>("isHost", () => {
 const players = ref(room?.value?.players);
 
 // Save room to sessionStorage whenever it changes
-watch(room, (newRoom) => {
-  if (process.client && newRoom) {
-    sessionStorage.setItem("room", JSON.stringify(newRoom));
-    players.value = newRoom.players || [];
-  }
-}, { deep: true });
+watch(
+  room,
+  (newRoom) => {
+    if (process.client && newRoom) {
+      sessionStorage.setItem("room", JSON.stringify(newRoom));
+      players.value = newRoom.players || [];
+    }
+  },
+  { deep: true }
+);
 
 onMounted(async () => {
   if (!room.value) {
@@ -76,7 +80,7 @@ async function leaveRoom() {
 }
 
 async function startRoom() {
-  navigateTo(`/game/${id}`)
+  navigateTo(`/game/${id}`);
 }
 </script>
 

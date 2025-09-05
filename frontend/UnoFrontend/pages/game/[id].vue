@@ -22,7 +22,7 @@ onMounted(async () => {
 
       // Handle getIDFromCookie properly
       const playerIdResult = getIDFromCookie();
-      if (typeof playerIdResult === 'string') {
+      if (typeof playerIdResult === "string") {
         currentPlayerId.value = playerIdResult;
       } else {
         console.error("Could not get player ID from cookie");
@@ -39,7 +39,9 @@ const getPlayerPositions = computed(() => {
   if (!players.value.length) return [];
 
   const playerCount = players.value.length;
-  const currentPlayerIndex = players.value.findIndex(p => p.id === currentPlayerId.value);
+  const currentPlayerIndex = players.value.findIndex(
+    (p) => p.id === currentPlayerId.value
+  );
 
   // Arrange players with current player always at bottom
   const orderedPlayers = [];
@@ -52,19 +54,19 @@ const getPlayerPositions = computed(() => {
 
   if (playerCount === 2) {
     // 2 players: opponent at top, current player at bottom
-    positions.push({ player: orderedPlayers[1], position: 'top' });
-    positions.push({ player: orderedPlayers[0], position: 'bottom' });
+    positions.push({ player: orderedPlayers[1], position: "top" });
+    positions.push({ player: orderedPlayers[0], position: "bottom" });
   } else if (playerCount === 3) {
     // 3 players: clockwise from current at bottom
-    positions.push({ player: orderedPlayers[0], position: 'bottom' }); // current player
-    positions.push({ player: orderedPlayers[1], position: 'top' });
-    positions.push({ player: orderedPlayers[2], position: 'right' });
+    positions.push({ player: orderedPlayers[0], position: "bottom" }); // current player
+    positions.push({ player: orderedPlayers[1], position: "top" });
+    positions.push({ player: orderedPlayers[2], position: "right" });
   } else if (playerCount === 4) {
     // 4 players: clockwise from current at bottom
-    positions.push({ player: orderedPlayers[0], position: 'bottom' }); // current player
-    positions.push({ player: orderedPlayers[1], position: 'right' });
-    positions.push({ player: orderedPlayers[2], position: 'top' });
-    positions.push({ player: orderedPlayers[3], position: 'left' });
+    positions.push({ player: orderedPlayers[0], position: "bottom" }); // current player
+    positions.push({ player: orderedPlayers[1], position: "right" });
+    positions.push({ player: orderedPlayers[2], position: "top" });
+    positions.push({ player: orderedPlayers[3], position: "left" });
   }
 
   return positions;
@@ -126,7 +128,7 @@ const getPlayerPositions = computed(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
 }
 
 .game-board {
@@ -137,7 +139,7 @@ const getPlayerPositions = computed(() => {
   max-height: 800px;
   border-radius: 20px;
   background: radial-gradient(ellipse at center, #4a7c59 0%, #2d5a27 70%);
-  box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3);
 }
 
 /* Player positioning */
@@ -176,7 +178,7 @@ const getPlayerPositions = computed(() => {
   background: rgba(255, 255, 255, 0.9);
   padding: 12px 20px;
   border-radius: 25px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-align: center;
   border: 3px solid #1a3d1a;
 }
@@ -223,7 +225,7 @@ const getPlayerPositions = computed(() => {
   font-weight: bold;
   cursor: pointer;
   transition: transform 0.2s;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .card:hover {
