@@ -14,5 +14,8 @@
     "nuxt": "^3.15.0",
     "vue": "latest",
     "vue-router": "latest"
+  },
+  "devDependencies": {
+    "prettier": "3.6.2"
   }
 }
