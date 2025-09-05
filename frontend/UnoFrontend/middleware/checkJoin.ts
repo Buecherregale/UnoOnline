@@ -24,7 +24,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
         try {
             // Fetch room data to verify it exists
-            room = await $fetch(`/api/room/${roomID}`);
+            room = await $fetch<Room>(`/api/room/${roomID}`);
         } catch (error) {
             // Room not found - redirect to join page
             window.alert('no room found with ID: ' + roomID);
@@ -39,7 +39,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         if(room && !(room?.players.some(player => player.id === playerID))) {
             try {
                 // Add player to room
-                const responseRoom: Room = await $fetch(`api/room/${roomID}/players`, {
+                const responseRoom: Room = await $fetch<Room>(`api/room/${roomID}/players`, {
                         method: 'POST',
                         body: {
                             id: playerID,

@@ -13,7 +13,7 @@ export const getIDFromCookie = (): string | Promise<void | NavigationFailure | f
     // Return undefined for empty/missing cookies
     if (!playerStr || playerStr.length === 0) {
         //instead of return redirect player to home page
-        return navigateTo('/');
+        return navigateTo('/login');
     }
 
     // Parse stored player data and extract ID
