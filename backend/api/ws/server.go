@@ -99,6 +99,7 @@ func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, room
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Upgrade error:", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -106,6 +107,7 @@ func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, room
 	room, exists := s.Rooms[roomId]
 	if !exists {
 		log.Printf("Room %s does not exist\n", roomId)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 	s.mutex.Unlock()
@@ -113,6 +115,7 @@ func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, room
 	ro := data.Rooms[roomId]
 	if !slices.ContainsFunc(ro.Players, func(p models.Player) bool { return p.Id == playerId }) {
 		log.Printf("Player not in room\n")
+		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
 

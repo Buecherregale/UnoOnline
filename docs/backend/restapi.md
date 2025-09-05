@@ -79,5 +79,5 @@
   - **Error Responses:**
     - `400 - Bad request`: Invalid url paramters.
     - `404 - Not found`: Room or player does not exist.
-    - `403 - Forbidden`: Player did not join the room via (Join)[#Join].
+    - `403 - Forbidden`: Player did not join the room via [Join](#join).
 
