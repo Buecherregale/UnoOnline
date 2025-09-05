@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Room } from "~/util/models";
 import { getIDFromCookie } from "~/util/getIDFromCookie";
+import {process} from "std-env";
 
 definePageMeta({
   middleware: ["check-join"],
@@ -8,8 +9,33 @@ definePageMeta({
 
 const route = useRoute();
 let id = route.params.id;
-let room = useState<Room>("room");
+
+const room = useState<Room>("room", () => {
+  if (process.client) {
+    const stored = sessionStorage.getItem("room");
+    return stored ? JSON.parse(stored) : null;
+  }
+  return null;
+});
+
+// Load isHost from sessionStorage or default to false
+const isHost = useState<boolean>("isHost", () => {
+  if (process.client) {
+    const stored = sessionStorage.getItem("isHost");
+    return stored === "true";
+  }
+  return false;
+});
+
 const players = ref(room?.value?.players);
+
+// Save room to sessionStorage whenever it changes
+watch(room, (newRoom) => {
+  if (process.client && newRoom) {
+    sessionStorage.setItem("room", JSON.stringify(newRoom));
+    players.value = newRoom.players || [];
+  }
+}, { deep: true });
 
 onMounted(async () => {
   if (!room.value) {
@@ -19,6 +45,14 @@ onMounted(async () => {
     }
   }
   players.value = room.value?.players || [];
+
+  // Ensure isHost is properly loaded from sessionStorage after mount
+  if (process.client) {
+    const stored = sessionStorage.getItem("isHost");
+    if (stored !== null) {
+      isHost.value = stored === "true";
+    }
+  }
 });
 
 async function leaveRoom() {
@@ -40,6 +74,10 @@ async function leaveRoom() {
     });
   }
 }
+
+async function startRoom() {
+  navigateTo(`/game/${id}`)
+}
 </script>
 
 <template>
@@ -59,6 +97,13 @@ async function leaveRoom() {
       class="mt-8 px-6 py-3 bg-red-500 text-white font-bold rounded-lg shadow-lg hover:bg-red-600 focus:outline-none"
     >
       Leave
+    </button>
+    <button
+      v-if="isHost"
+      @click="startRoom"
+      class="mt-4 px-6 py-3 bg-green-500 text-white font-bold rounded-lg shadow-lg hover:bg-green-600 focus:outline-none"
+    >
+      Start Game
     </button>
   </div>
 </template>
