@@ -1,17 +1,25 @@
 <script setup lang="ts">
 import type { Room } from "~/util/models";
 import { getIDFromCookie } from "~/util/getIDFromCookie";
+import {process} from "std-env";
 
 const showPopupHost = ref(false);
 const showPopupJoin = ref(false);
 const selectedPlayerCount = ref(2);
 const enteredLobbyID = ref("");
 
+function saveRoomToSession(room: Room, host: boolean) {
+  if (process.client) {
+    sessionStorage.setItem("room", JSON.stringify(room));
+    sessionStorage.setItem("isHost", host.toString());
+  }
+}
+
 async function confirmedHost() {
   showPopupHost.value = false;
   const id = getIDFromCookie();
   try {
-    const responseRoom: Room = await $fetch("/api/room", {
+    const responseRoom: Room = await $fetch<Room>("/api/room", {
       method: "POST",
       body: {
         id: id,
@@ -19,7 +27,9 @@ async function confirmedHost() {
     });
     console.log(responseRoom);
     const room = useState("room", () => responseRoom);
+    const isHost = useState("isHost", () => true);
     const roomID = responseRoom.id;
+    saveRoomToSession(responseRoom, true);
     navigateTo(`/lobby-${roomID}`);
   } catch (error) {
     console.error("Error communicating with internal API:", error);
@@ -35,7 +45,7 @@ async function confirmedJoin() {
   const id = getIDFromCookie();
   console.log(enteredLobbyID.value);
   try {
-    const responseRoom: Room = await $fetch(
+    const responseRoom: Room = await $fetch<Room>(
       `api/room/${enteredLobbyID.value}/players`,
       {
         method: "POST",
@@ -46,7 +56,9 @@ async function confirmedJoin() {
     );
     console.log(responseRoom);
     const room = useState("room", () => responseRoom);
+    const isHost = useState("isHost", () => false);
     const roomID = responseRoom.id;
+    saveRoomToSession(responseRoom, false);
     navigateTo(`/lobby-${roomID}`);
   } catch (error) {
     console.error("Error communicating with internal API:", error);
