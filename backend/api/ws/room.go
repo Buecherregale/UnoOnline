@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (room *WsRoom) BroadcastMessage(msgType string, payload interface{}) {
+func (room *WsRoom) BroadcastMessage(msgType string, payload any) {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		log.Printf("failed to marshal payload: %v\n", err)
