@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (player *WsPlayer) SendMessage(msgType string, payload interface{}) {
+func (player *WsPlayer) SendMessage(msgType string, payload any) {
 	bytes, err := json.Marshal(payload)
 	if err != nil {
 		log.Printf("could not marshal message %s\n", payload)
@@ -28,7 +28,7 @@ func (player *WsPlayer) SendMessage(msgType string, payload interface{}) {
 	}
 }
 
-func (player *WsPlayer) AskAndWaitReply(msgType string, payload interface{}, timeout time.Duration) (*Message, bool, error) {
+func (player *WsPlayer) AskAndWaitReply(msgType string, payload any, timeout time.Duration) (*Message, bool, error) {
 	messageId := uuid.New()
 
 	responseChan := make(chan Message, 1)

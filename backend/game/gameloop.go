@@ -28,7 +28,7 @@ func StartRoom(room *models.Room, cards []Card, listeners []CardPlayEventListene
 	state.deal(state.Players, 7)
 	top := state.Deck.Draw()
 	state.Stack.Play(top)
-	state.WsRoom.BroadcastMessage("GameStartPayload", interface{}(top))
+	state.WsRoom.BroadcastMessage("GameStartPayload", any(top))
 
 	return state
 }
@@ -64,7 +64,7 @@ func (player *GamePlayer) play(state *GameState) {
 		state.WsRoom.BroadcastMessage("CardPlayedPayload", ws.CardPlayedPayload{
 			PlayerId: player.P.Id,
 			Name:     player.P.Name,
-			Card:     interface{}(choice),
+			Card:     any(choice),
 		})
 		// notify listener
 		for _, l := range state.listeners {

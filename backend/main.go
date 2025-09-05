@@ -60,12 +60,12 @@ func FillWsTestData(server *ws.WsServer) {
 
 func Router() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /player", controller.CreatePlayer)
-	mux.HandleFunc("POST /room", controller.CreateRoom)
-	mux.HandleFunc("POST /room/{rId}", controller.Start)
-	mux.HandleFunc("GET /room/{rId}", controller.GetRoom)
-	mux.HandleFunc("POST /room/{rId}/players", controller.JoinRoom)
-	mux.HandleFunc("DELETE /room/{rId}/players", controller.LeaveRoom)
+	mux.HandleFunc("POST /players", controller.CreatePlayer)
+	mux.HandleFunc("POST /rooms", controller.CreateRoom)
+	mux.HandleFunc("POST /rooms/{rId}", controller.Start)
+	mux.HandleFunc("GET /rooms/{rId}", controller.GetRoom)
+	mux.HandleFunc("POST /rooms/{rId}/players", controller.JoinRoom)
+	mux.HandleFunc("DELETE /rooms/{rId}/players", controller.LeaveRoom)
 
 	return mux
 }
