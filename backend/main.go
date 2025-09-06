@@ -7,7 +7,7 @@ import (
 
 	"uno_online/api/controller"
 	"uno_online/api/data"
-	"uno_online/api/models"
+	"uno_online/api/dtos"
 	"uno_online/api/ws"
 
 	"github.com/google/uuid"
@@ -34,15 +34,15 @@ func FillTestData() {
 	p1iD := uuid.MustParse("e5384075-99f9-474e-85d7-0bb4bb0c62a7")
 	p2iD := uuid.MustParse("52041871-8abf-4d03-8615-349753a791b6")
 	p3iD := uuid.MustParse("dd4d2e03-d670-4097-bdec-22cecfdbdefc")
-	p1 := models.Player{Name: "Klaus", Id: p1iD}
-	p2 := models.Player{Name: "Biggie Smalls", Id: p2iD}
-	p3 := models.Player{Name: "Wilhelm", Id: p3iD}
+	p1 := dtos.Player{Name: "Klaus", Id: p1iD}
+	p2 := dtos.Player{Name: "Biggie Smalls", Id: p2iD}
+	p3 := dtos.Player{Name: "Wilhelm", Id: p3iD}
 	data.Players[p1iD] = &p1
 	data.Players[p2iD] = &p2
 	data.Players[p3iD] = &p3
 
 	room1iD := uuid.MustParse("4d3e97bf-cc2e-4af0-9397-2a0e3b331c6f")
-	data.Rooms[room1iD] = &models.Room{Id: room1iD, Owner: p1, Players: []models.Player{p1}}
+	data.Rooms[room1iD] = &dtos.Room{Id: room1iD, Owner: p1, Players: []dtos.Player{p1}}
 }
 
 func FillWsTestData(server *ws.WsServer) {
