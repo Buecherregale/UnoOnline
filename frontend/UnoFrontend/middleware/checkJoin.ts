@@ -33,7 +33,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
     // Get current player's ID from cookie
     const playerID = getIDFromCookie();
-    console.log(room?.players);
 
     // Check if player is not already in the room
     if (room && !room?.players.some((player) => player.id === playerID)) {

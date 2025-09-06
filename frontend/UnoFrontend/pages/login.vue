@@ -5,7 +5,7 @@ let name = ref("");
 
 const playerFetches = async (name: string): Promise<Player> => {
   try {
-    return await $fetch("/api/playerID", {
+    return await $fetch<Player>("/api/playerID", {
       method: "POST",
       body: {
         name: name,
