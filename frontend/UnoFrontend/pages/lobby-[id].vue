@@ -43,7 +43,7 @@ watch(
 
 onMounted(async () => {
   if (!room.value) {
-    const data = await $fetch(`/api/room/${id}`);
+    const data = await $fetch<Room>(`/api/room/${id}`);
     if (data) {
       room.value = data;
     }
