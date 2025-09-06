@@ -37,7 +37,7 @@
 - **Request Body:**
   - `id` (UUID): The id of the player. 
 - **Response:**
-  - `200 OK`: Game started.
+  - `200 - OK`: Game started.
   - **Error Responses:** 
     - `403 - Forbidden`: Player is not the owner. 
     - `404 - Not found`: Room or player does not exist.
@@ -78,6 +78,6 @@
   - `OK`: Connection upgrade to websocket.
   - **Error Responses:**
     - `400 - Bad request`: Invalid url paramters.
-    - `404 - Not found`: Room or player does not exist.
     - `403 - Forbidden`: Player did not join the room via [Join](#join).
+    - `404 - Not found`: Room or player does not exist.
 

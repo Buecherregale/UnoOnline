@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"uno_online/api/data"
-	"uno_online/api/models"
+	"uno_online/api/dtos"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -113,7 +113,7 @@ func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, room
 	s.mutex.Unlock()
 
 	ro := data.Rooms[roomId]
-	if !slices.ContainsFunc(ro.Players, func(p models.Player) bool { return p.Id == playerId }) {
+	if !slices.ContainsFunc(ro.Players, func(p dtos.Player) bool { return p.Id == playerId }) {
 		log.Printf("Player not in room\n")
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return

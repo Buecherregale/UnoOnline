@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"uno_online/api/data"
-	"uno_online/api/models"
+	"uno_online/api/dtos"
 
 	"github.com/google/uuid"
 )
@@ -21,7 +21,7 @@ func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := uuid.New()
-	player := models.Player{Id: id, Name: p.Name}
+	player := dtos.Player{Id: id, Name: p.Name}
 	data.Players[id] = &player
 
 	w.WriteHeader(http.StatusCreated)

@@ -11,7 +11,10 @@ The backend has 2 distinct communication channels:
 1. Broadcast: Sends the message to all players, the info is not sensitive to the players.
 1. Single Player: Sends the message to a single player. May contain things like actual cards the player has.
 
-**Note:** The variable names below are serialized in snake_case. E.g. `PlayerId` is serialized as `player_id`. Exact names can be read from the go json tags in [messages](/backend/api/ws/messages.go).
+**Note:**  
+1. Contrary to the [go code](backend/api/ws/messages.go), which uses `any`, this documentation shows the `Card` type. Please read the documentation of the `Card` type [here](/docs/backend/models.md#card).
+1. Values and Colors are standardly described as ints, agnostic to the card type they are. This is caused by the implementation as an `iota`. 
+1. The variable names below are serialized in snake_case. E.g. `PlayerId` is serialized as `player_id`. Exact names can be read from the go json tags in [messages.go](/backend/api/ws/messages.go).
 
 ## Payloads
 The payloads send and received by the websocket. 
@@ -26,33 +29,28 @@ The payloads send and received by the websocket.
 **Send to:** All players  
 **Send when:** The player cards have bean dealt at the start of the round.  
 **Structure:**   
-- `TopCard` (any): The top card on the stack.
+- `TopCard` ([Card](/docs/backend/models.md#card)): The top card on the stack.
 ### CardPlayed  
 **Send to:** All players  
 **Send when:** A player has played a card.  
 **Structure**:  
-- `PlayerId` (UUID): The id of the player that played a card.
-- `Name` (string): The display name of the player.
-- `Card` (any): The card played.
+- `Player` ([Player](/docs/backend/models.md#player)): The player that played a card.
+- `Card` ([Card](/docs/backend/models.md#card)): The card played.
 ### PlayerTurn
 **Send to:** All players  
 **Send when:** The next players turn begins.  
 **Structure:**  
-- `PlayerId` (UUID): The id of the player, whose turn starts.
-- `Name` (string): The display name of the player.
+- `Player` ([Player](/docs/backend/models.md#player)): The player, whose turn starts. 
 ### PlayerWin
 **Send to:** All players    
 **Send when:** A player wins the game.    
-**Structure:**  
-- `PlayerId` (UUID): The id of the player that won.  
-- `Name` (string): The display name of the player.  
-
+**Structure:**
+- `Player` ([player](/docs/backend/models.md#player)): The player that won.
 ### PlayerDrawsCards  
 **Send to:** All players  
 **Send when:** A player draws cards, e.g. forced by +2 cards or not having any fitting or initial dealing.   
 **Structure:**   
-- `PlayerId` (UUID): The id of the player that draws cards.
-- `Name` (string): The display name of the player.
+- `Player` ([player](/docs/backend/models.md#player)): The player that draws the cards. 
 - `Amount` (int): The number of cards drawn.
 
 ### PlayerSkipped
@@ -71,8 +69,7 @@ The payloads send and received by the websocket.
 **Send to:** All players  
 **Send when:** A player chooses the color after playing a wildcard.  
 **Structure:**   
-- `PlayerId` (UUID): The id of the player who chose a color.  
-- `Name` (string): The display name of the player.  
+- `Player` ([player](/docs/backend/models.md#player)): The player who chose the color. 
 - `Color` (int): The chosen color.
 
 ### AskColor
@@ -91,19 +88,39 @@ The payloads send and received by the websocket.
 **Send to:** The current player  
 **Send when:** The players turn starts and a card needs to be played.  
 **Structure:**    
-- `Options` (any[]): The available cards to choose from.  
+- `Options` (\[\][Card](/docs/backend/models.md#card)): The available cards to choose from.  
 
 ### AnswerCard
 **Send to:** The server    
 **Send when:** A player responds to an `AskCard` event.    
 **Structure:**  
-- `Card` (any): The card chosen by the player.  
+- `Card` ([Card](/docs/backend/models.md#card)): The card chosen by the player.  
 
 ### YouDrawCard
 **Send to:** The player who draws    
 **Send when:** The player has to draw card(s).  
 **Structure:**  
-- `Cards` ([]any): The cards drawn by the player.  
+- `Card` (\[\][Card](/docs/backend/models.md#card)): The cards drawn by the player.  
+
+### RoomJoin
+**Send to:** All players  
+**Send when:** A new player joins the room.  
+**Structure:**  
+- `Player` ([Player](/docs/backend/models.md#player)): The player joining.
+
+### RoomLeft
+**Send to:** All players  
+**Send when:** A player leaves the room.  
+**Structure:**  
+- `Player` ([Player](/docs/backend/models.md#player)): The player leaving.
+- `Owner` ([Player](/docs/backend/models.md#player)): The new owner of the room. If the old one is leaving a new one is chosen. Else this contains the old owner.
+
+### RoomStart
+**Send to:** All players  
+**Send when:** A room is started via [Start](/docs/backend/restapi.md#start).  
+**Structure:**  
+- `Players` (\[\][Player](/docs/backend/models.md#player)): The players in the room.  
+**Note:** This is different from [GameStart](#gamestart), which is send, when the card game itself starts.
 
 ### RoomJoin
 **Send to:** All players  
