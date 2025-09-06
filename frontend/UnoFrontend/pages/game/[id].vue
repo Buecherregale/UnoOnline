@@ -22,12 +22,6 @@ onMounted(async () => {
 
       // Handle getIDFromCookie properly
       const playerIdResult = getIDFromCookie();
-      if (typeof playerIdResult === "string") {
-        currentPlayerId.value = playerIdResult;
-      } else {
-        console.error("Could not get player ID from cookie");
-        // Handle redirect case - the function might have already navigated
-      }
     }
   } catch (error) {
     console.error("Error fetching room data:", error);
