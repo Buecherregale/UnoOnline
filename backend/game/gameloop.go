@@ -62,7 +62,7 @@ func (player *GamePlayer) play(state *GameState) {
 	// skips in case of wrong choice (frontend can handle this)
 	if played {
 		state.WsRoom.BroadcastMessage("CardPlayedPayload", ws.CardPlayedPayload{
-			Player: 	player.P,
+			Player: 	*player.P,
 			Card:     any(choice),
 		})
 		// notify listener
