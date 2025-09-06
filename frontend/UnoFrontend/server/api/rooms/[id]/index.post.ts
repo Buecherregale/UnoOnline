@@ -1,25 +1,25 @@
 import { getIDFromCookie } from "~/util/getIDFromCookie";
 
 /**
- * Server API endpoint to start a room
+ * Server API endpoint to start a rooms
  * Acts as proxy between frontend and Go backend
  *
- * @route Post /api/room/{id}
+ * @route Post /api/rooms/{id}
  * @param event - Nuxt event handler context
- * @returns boolean - if starting the room was successful
+ * @returns boolean - if starting the rooms was successful
  */
 export default defineEventHandler(async (event): Promise<boolean> => {
   // Get backend API URL from runtime config
   const { apiBase } = useRuntimeConfig().public as { apiBase: string };
 
-  // Extract room ID from URL parameters
+  // Extract rooms ID from URL parameters
   const id = getRouterParam(event, "id");
   // get Player from Cookies
   const player = getIDFromCookie();
 
   try {
-    // Fetch room data from Go backend
-    const externalResponse: string = await $fetch(`/room/${id}`, {
+    // Fetch rooms data from Go backend
+    const externalResponse: string = await $fetch(`/rooms/${id}`, {
       method: "POST",
       baseURL: apiBase,
       body: {

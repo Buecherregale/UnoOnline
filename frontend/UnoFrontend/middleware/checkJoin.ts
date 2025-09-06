@@ -2,8 +2,8 @@ import type { Room } from "~/util/models";
 import { getIDFromCookie } from "~/util/getIDFromCookie";
 
 /**
- * Middleware for lobby routes with automatic room joining
- * Validates room existence and adds player if not already a member
+ * Middleware for lobby routes with automatic rooms joining
+ * Validates rooms existence and adds player if not already a member
  */
 export default defineNuxtRouteMiddleware(async (to, from) => {
   // Skip execution on server-side rendering
@@ -11,35 +11,35 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   // Check if navigating to a lobby route
   if (to.fullPath.indexOf("/lobby") > -1) {
-    // Extract room ID from URL path
+    // Extract rooms ID from URL path
     const roomID = to.fullPath.split("/lobby-")[1];
 
-    // Validate room ID exists
+    // Validate rooms ID exists
     if (!roomID) {
-      window.alert("Invalid room ID.");
+      window.alert("Invalid rooms ID.");
       return navigateTo("/hostOrJoin");
     }
 
     let room: Room | null = null;
 
     try {
-      // Fetch room data to verify it exists
-      room = await $fetch<Room>(`/api/room/${roomID}`);
+      // Fetch rooms data to verify it exists
+      room = await $fetch<Room>(`/api/rooms/${roomID}`);
     } catch (error) {
       // Room not found - redirect to join page
-      window.alert("no room found with ID: " + roomID);
+      window.alert("no rooms found with ID: " + roomID);
       return navigateTo("/hostOrJoin");
     }
 
     // Get current player's ID from cookie
     const playerID = getIDFromCookie();
 
-    // Check if player is not already in the room
+    // Check if player is not already in the rooms
     if (room && !room?.players.some((player) => player.id === playerID)) {
       try {
-        // Add player to room
+        // Add player to rooms
         const responseRoom: Room = await $fetch<Room>(
-          `api/room/${roomID}/players`,
+          `api/rooms/${roomID}/players`,
           {
             method: "POST",
             body: {
@@ -49,13 +49,13 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         );
         console.log(responseRoom);
 
-        // Update global room state
+        // Update global rooms state
         useState("room", () => responseRoom);
 
         // Navigate to lobby
         navigateTo(`/lobby-${roomID}`);
       } catch (error: any) {
-        // Handle 409 Conflict (player already in room)
+        // Handle 409 Conflict (player already in rooms)
         if (error?.response?.status === 409) {
           return; // Ignore and continue
         }

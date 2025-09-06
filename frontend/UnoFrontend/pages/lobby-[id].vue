@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Room } from "~/util/models";
 import { getIDFromCookie } from "~/util/getIDFromCookie";
-import { process } from "std-env";
+import { getRoomFromCookie, getHostStatusFromCookie, saveRoomToCookie, clearGameCookies } from "~/util/cookieHelpers";
 
 definePageMeta({
   middleware: ["check-join"],
@@ -10,31 +10,23 @@ definePageMeta({
 const route = useRoute();
 let id = route.params.id;
 
-const room = useState<Room>("room", () => {
-  if (process.client) {
-    const stored = sessionStorage.getItem("room");
-    return stored ? JSON.parse(stored) : null;
-  }
-  return null;
+const room = useState<Room|null>("room", () => {
+  return getRoomFromCookie();
 });
 
-// Load isHost from sessionStorage or default to false
+// Load isHost from cookie
 const isHost = useState<boolean>("isHost", () => {
-  if (process.client) {
-    const stored = sessionStorage.getItem("isHost");
-    return stored === "true";
-  }
-  return false;
+  return getHostStatusFromCookie();
 });
 
 const players = ref(room?.value?.players);
 
-// Save room to sessionStorage whenever it changes
+// Save rooms to cookie whenever it changes
 watch(
   room,
   (newRoom) => {
-    if (process.client && newRoom) {
-      sessionStorage.setItem("room", JSON.stringify(newRoom));
+    if (newRoom) {
+      saveRoomToCookie(newRoom);
       players.value = newRoom.players || [];
     }
   },
@@ -43,32 +35,27 @@ watch(
 
 onMounted(async () => {
   if (!room.value) {
-    const data = await $fetch<Room>(`/api/room/${id}`);
+    const data = await $fetch<Room>(`/api/rooms/${id}`);
     if (data) {
       room.value = data;
     }
   }
   players.value = room.value?.players || [];
-
-  // Ensure isHost is properly loaded from sessionStorage after mount
-  if (process.client) {
-    const stored = sessionStorage.getItem("isHost");
-    if (stored !== null) {
-      isHost.value = stored === "true";
-    }
-  }
 });
 
 async function leaveRoom() {
   const id = getIDFromCookie();
   const roomID: string = useState<Room>("room").value.id;
   try {
-    await $fetch(`/api/room/${roomID}/players`, {
+    await $fetch(`/api/rooms/${roomID}/players`, {
       method: "DELETE",
       body: {
         id: id,
       },
     });
+
+    clearGameCookies();
+
     navigateTo(`/hostOrJoin`);
   } catch (error) {
     console.error("Error communicating with internal API:", error);
