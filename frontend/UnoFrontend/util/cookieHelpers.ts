@@ -32,7 +32,9 @@ export function getRoomFromCookie(): Room | null {
       default: () => '',
     });
 
-    if (roomCookie.value && roomCookie.value !== '') {
+      const cookieValue = roomCookie.value;
+
+    if (cookieValue && cookieValue !== '' || cookieValue !== '[object Object]') {
       return JSON.parse(roomCookie.value) as Room;
     }
     return null;
