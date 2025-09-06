@@ -85,8 +85,7 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 	room.Players = append(room.Players, *joining)
 	wsRoom := ws.Server.Rooms[room.Id]
 	wsRoom.BroadcastMessage("RoomJoinPayload", ws.RoomJoinPayload{
-		PlayerId: joining.Id, 
-		Name: joining.Name,
+		Player: *joining,
 	})
 
 	w.WriteHeader(http.StatusAccepted)
@@ -151,10 +150,8 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	
 	wsRoom := ws.Server.Rooms[room.Id]
 	wsRoom.BroadcastMessage("RoomLeftPayload", ws.RoomLeftPayload {
-		PlayerId: leaving.Id,
-		Name: leaving.Name,
-		OwnerId: room.Owner.Id,
-		OwnerName: room.Owner.Name,
+		Player: *leaving,
+		Owner: room.Owner,
 	})
 	ws.Server.Rooms[room.Id].RemovePlayer(leaving.Id)
 }
