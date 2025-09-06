@@ -1,11 +1,11 @@
 package game
 
 import (
-	"uno_online/api/models"
+	"uno_online/api/dtos"
 	"uno_online/api/ws"
 )
 
-func StartRoom(room *models.Room, cards []Card, listeners []CardPlayEventListener) GameState {
+func StartRoom(room *dtos.Room, cards []Card, listeners []CardPlayEventListener) GameState {
 	gps := make([]*GamePlayer, len(room.Players))
 	for i, p := range room.Players {
 		gps[i] = &GamePlayer{P: &p}
@@ -62,8 +62,7 @@ func (player *GamePlayer) play(state *GameState) {
 	// skips in case of wrong choice (frontend can handle this)
 	if played {
 		state.WsRoom.BroadcastMessage("CardPlayedPayload", ws.CardPlayedPayload{
-			PlayerId: player.P.Id,
-			Name:     player.P.Name,
+			Player: 	player.P,
 			Card:     any(choice),
 		})
 		// notify listener

@@ -53,8 +53,7 @@ func wildcardPlayed(gp *game.GamePlayer, card *game.Card, state *game.GameState)
 	u.Chosen = choice
 
 	state.WsRoom.BroadcastMessage("PlayerChoseColorPayload", ws.PlayerChoseColorPayload{
-		PlayerId: gp.P.Id,
-		Name:     gp.P.Name,
+		Player: *gp.P,
 		Color:    choiceInt,
 	})
 	state.NextPlayer()
@@ -75,8 +74,7 @@ func wildcard4Played(gp *game.GamePlayer, card *game.Card, state *game.GameState
 	u.Chosen = choice
 
 	state.WsRoom.BroadcastMessage("PlayerChoseColorPayload", ws.PlayerChoseColorPayload{
-		PlayerId: gp.P.Id,
-		Name:     gp.P.Name,
+		Player: *gp.P,
 		Color:    choiceInt,
 	})
 

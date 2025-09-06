@@ -1,20 +1,20 @@
 package game
 
 import (
-	"uno_online/api/models"
+	"uno_online/api/dtos"
 	"uno_online/api/ws"
 )
 
 type CardPlayEventListener func(gp *GamePlayer, card *Card, state *GameState)
 
 type GamePlayer struct {
-	P    *models.Player
+	P    *dtos.Player
 	WsP  *ws.WsPlayer
 	Hand []Card
 }
 
 type GameState struct {
-	Room    *models.Room
+	Room    *dtos.Room
 	WsRoom  *ws.WsRoom
 	Players []*GamePlayer
 	Deck    *Deck
@@ -32,8 +32,7 @@ func (state *GameState) NextPlayer() *GamePlayer {
 	next := state.Players[state.CurrI]
 
 	state.WsRoom.BroadcastMessage("PlayerTurnPayload", ws.PlayerTurnPayload{
-		PlayerId: next.P.Id,
-		Name:     next.P.Name,
+		Player: *next.P,
 	})
 
 	return next
@@ -58,8 +57,7 @@ func (state *GameState) DrawCards(target *GamePlayer, amount int) {
 		})
 	}
 	state.WsRoom.BroadcastMessage("PlayerDrawsCardsPayload", ws.PlayerDrawsCardsPayload{
-		PlayerId: target.P.Id,
-		Name:     target.P.Name,
+		Player: *target.P,
 		Amount:   amount,
 	})
 }
