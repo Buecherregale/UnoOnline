@@ -12,7 +12,7 @@ The backend has 2 distinct communication channels:
 1. Single Player: Sends the message to a single player. May contain things like actual cards the player has.
 
 **Note:**  
-1. Contrary to the [go code](backend/api/ws/messages.go), which uses `any`, this documentation shows the `Card` type. Please read the documentation of the `Card` type [here](/docs/backend/models.md#card).
+1. Contrary to the [go code](/backend/api/ws/messages.go), which uses `any`, this documentation shows the `Card` type. Please read the documentation of the `Card` type [here](/docs/backend/models.md#card).
 1. Values and Colors are standardly described as ints, agnostic to the card type they are. This is caused by the implementation as an `iota`. 
 1. The variable names below are serialized in snake_case. E.g. `PlayerId` is serialized as `player_id`. Exact names can be read from the go json tags in [messages.go](/backend/api/ws/messages.go).
 
@@ -119,28 +119,7 @@ The payloads send and received by the websocket.
 **Send to:** All players  
 **Send when:** A room is started via [Start](/docs/backend/restapi.md#start).  
 **Structure:**  
-- `Players` (\[\][Player](/docs/backend/models.md#player)): The players in the room.  
-**Note:** This is different from [GameStart](#gamestart), which is send, when the card game itself starts.
-
-### RoomJoin
-**Send to:** All players  
-**Send when:** A new player joins the room.  
-**Structure:**  
-- `PlayerId` (UUID): The id of the player joining.
-- `Name` (string): The name of the player joining.
-
-### RoomLeft
-**Send to:** All players  
-**Send when:** A player leaves the room.  
-**Structure:**  
-- `PlayerId` (UUID): The id of the player leaving.
-- `Name` (string): The name of the player leaving.
-- `OwnerId` (UUID): The id of the player owning the room. The room owner is changed if the old one is leaving.
-- `OwnerName` (UUID): The name of the owner.
-
-### RoomStart
-**Send to:** All players  
-**Send when:** A room is started via [Start](/docs/backend/restapi.md#start).  
-**Structure:**  
 - `Players` (\[\][Player](/docs/backend/models.md#player)): The players in the room.
+
+**Note:** This is different from [GameStart](#gamestart), which is send, when the card game itself starts.
 
