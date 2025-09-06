@@ -7,7 +7,7 @@ import (
 	"slices"
 
 	"uno_online/api/data"
-	"uno_online/api/models"
+	"uno_online/api/dtos"
 	"uno_online/api/ws"
 	"uno_online/game"
 	"uno_online/uno"
@@ -37,7 +37,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rId := uuid.New()
-	room := models.Room{Id: rId, Players: []models.Player{*owner}, Owner: *owner}
+	room := dtos.Room{Id: rId, Players: []dtos.Player{*owner}, Owner: *owner}
 
 	data.Rooms[rId] = &room
 	ws.Server.CreateRoom(rId, nil)
