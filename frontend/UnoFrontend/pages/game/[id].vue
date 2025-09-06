@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type {Player, Room} from "~/util/models";
-import {getIDFromCookie} from "~/util/getIDFromCookie";
+import type { Player, Room } from "~/util/models";
+import { getIDFromCookie } from "~/util/getIDFromCookie";
 
 const route = useRoute();
 const gameId = route.params.id;
