@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { Room } from "~/util/models";
-import { getIDFromCookie } from "~/util/getIDFromCookie";
+import {getIDFromCookie, getPlayerFromCookie} from "~/util/getIDFromCookie";
 import {
   getRoomFromCookie,
   getHostStatusFromCookie,
   saveRoomToCookie,
-  clearGameCookies,
 } from "~/util/cookieHelpers";
+import WebSocketHelper from "~/util/webSocketHelper";
 
 definePageMeta({
   middleware: ["check-join"],
@@ -14,6 +14,7 @@ definePageMeta({
 
 const route = useRoute();
 let id = route.params.id;
+const player = getPlayerFromCookie();
 
 const room = useState<Room | null>("room", () => {
   return getRoomFromCookie();
@@ -46,6 +47,10 @@ onMounted(async () => {
     }
   }
   players.value = room.value?.players || [];
+
+  let wSH = new WebSocketHelper(player!.id, id as string);
+  wSH.playerJoined(player!)
+
 });
 
 async function leaveRoom() {

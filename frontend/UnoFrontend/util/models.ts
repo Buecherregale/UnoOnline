@@ -14,3 +14,8 @@ export type Room = {
   players: Player[]; // List of all players in room
   owner: Player; // Room creator/host
 };
+
+export type message = {
+    type: string  // the name of the payload type (the tags below + `Payload`)
+    payload: any  // the struct instance from below
+}

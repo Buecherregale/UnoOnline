@@ -18,7 +18,6 @@ async function confirmedHost() {
         id: id,
       },
     });
-    console.log(responseRoom);
 
     // Verwende Cookie-Helper anstatt sessionStorage
     saveGameStateToCookies(responseRoom, true);

@@ -20,3 +20,20 @@ export const getIDFromCookie = (): string => {
   const player: Player = JSON.parse(JSON.stringify(playerStr));
   return player.id;
 };
+
+export const getPlayerFromCookie = (): Player | null => {
+  // Access player cookie using Nuxt's composable
+  const playerCookie = useCookie("playerUUID");
+  const playerStr: string = playerCookie.value ?? "";
+
+  // Return undefined for empty/missing cookies
+  if (!playerStr || playerStr.length === 0) {
+    //instead of return redirect player to home page
+    navigateTo("/login");
+    return null;
+  }
+
+  // Parse stored player data and extract ID
+  const player: Player = JSON.parse(JSON.stringify(playerStr));
+  return player;
+}
