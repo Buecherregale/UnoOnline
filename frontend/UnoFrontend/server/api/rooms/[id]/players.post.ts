@@ -1,30 +1,30 @@
 import { Room } from "~/util/models";
 
 /**
- * Server API endpoint to add a player to an existing room
+ * Server API endpoint to add a player to an existing rooms
  * Acts as proxy between frontend and Go backend
  *
- * @route POST /api/room/{id}/players
+ * @route POST /api/rooms/{id}/players
  * @param event - Nuxt event handler context
- * @returns Promise<Room> - Updated room data with new player
+ * @returns Promise<Room> - Updated rooms data with new player
  */
 export default defineEventHandler(async (event): Promise<Room> => {
   // Get backend API URL from runtime config
   const { apiBase } = useRuntimeConfig().public as { apiBase: string };
 
-  // Extract room ID from URL parameters
+  // Extract rooms ID from URL parameters
   const roomID = getRouterParam(event, "id");
 
   // Extract player ID from request body
   const body = await readBody(event);
   const { id } = body;
 
-  // Initialize room object
+  // Initialize rooms object
   let room = {} as Room;
 
   try {
     // Send join request to Go backend
-    const externalResponse: string = await $fetch(`/room/${roomID}/players`, {
+    const externalResponse: string = await $fetch(`/rooms/${roomID}/players`, {
       method: "POST",
       baseURL: apiBase,
       body: {
@@ -32,11 +32,11 @@ export default defineEventHandler(async (event): Promise<Room> => {
       },
     });
 
-    // Parse and return updated room data
+    // Parse and return updated rooms data
     room = JSON.parse(externalResponse);
     return room;
   } catch (error: any) {
-    // Pass through 409 Conflict (player already in room)
+    // Pass through 409 Conflict (player already in rooms)
     if (error?.response?.status === 409) {
       throw error;
     }

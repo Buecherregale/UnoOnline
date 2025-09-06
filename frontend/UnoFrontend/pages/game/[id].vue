@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Room, Player } from "~/util/models";
-import { getIDFromCookie } from "~/util/getIDFromCookie";
+import type {Player, Room} from "~/util/models";
+import {getIDFromCookie} from "~/util/getIDFromCookie";
 
 const route = useRoute();
 const gameId = route.params.id;
@@ -12,19 +12,19 @@ definePageMeta({
   middleware: ["check-join"],
 });
 
-// Fetch room data and initialize game
+// Fetch rooms data and initialize game
 onMounted(async () => {
   try {
-    const data = await $fetch(`/api/room/${gameId}`);
+    const data = await $fetch<Room>(`/api/rooms/${gameId}`);
     if (data) {
       room.value = data;
       players.value = data.players || [];
 
       // Handle getIDFromCookie properly
-      const playerIdResult = getIDFromCookie();
+      currentPlayerId.value = getIDFromCookie();
     }
   } catch (error) {
-    console.error("Error fetching room data:", error);
+    console.error("Error fetching rooms data:", error);
   }
 });
 
@@ -51,12 +51,12 @@ const getPlayerPositions = computed(() => {
     positions.push({ player: orderedPlayers[1], position: "top" });
     positions.push({ player: orderedPlayers[0], position: "bottom" });
   } else if (playerCount === 3) {
-    // 3 players: clockwise from current at bottom
+    // 3 players: Counterclockwise from current at bottom
     positions.push({ player: orderedPlayers[0], position: "bottom" }); // current player
     positions.push({ player: orderedPlayers[1], position: "top" });
     positions.push({ player: orderedPlayers[2], position: "right" });
   } else if (playerCount === 4) {
-    // 4 players: clockwise from current at bottom
+    // 4 players: Counterclockwise from current at bottom
     positions.push({ player: orderedPlayers[0], position: "bottom" }); // current player
     positions.push({ player: orderedPlayers[1], position: "right" });
     positions.push({ player: orderedPlayers[2], position: "top" });

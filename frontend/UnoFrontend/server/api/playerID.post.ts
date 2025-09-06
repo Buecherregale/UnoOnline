@@ -22,7 +22,7 @@ export default defineEventHandler(async (event): Promise<Player> => {
 
   try {
     // Forward request to Go backend API
-    const externalResponse: string = await $fetch("/player", {
+    const externalResponse: string = await $fetch("/players", {
       method: "POST",
       body: {
         name: name,
