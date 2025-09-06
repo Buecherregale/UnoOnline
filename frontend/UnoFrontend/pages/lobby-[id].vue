@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import type { Room } from "~/util/models";
 import { getIDFromCookie } from "~/util/getIDFromCookie";
-import { getRoomFromCookie, getHostStatusFromCookie, saveRoomToCookie, clearGameCookies } from "~/util/cookieHelpers";
+import {
+  getRoomFromCookie,
+  getHostStatusFromCookie,
+  saveRoomToCookie,
+  clearGameCookies,
+} from "~/util/cookieHelpers";
 
 definePageMeta({
   middleware: ["check-join"],
@@ -10,7 +15,7 @@ definePageMeta({
 const route = useRoute();
 let id = route.params.id;
 
-const room = useState<Room|null>("room", () => {
+const room = useState<Room | null>("room", () => {
   return getRoomFromCookie();
 });
 
