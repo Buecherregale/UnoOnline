@@ -44,26 +44,7 @@ onMounted(async () => {
 });
 
 async function leaveRoom() {
-  const id = getIDFromCookie();
-  const roomID: string = useState<Room>("room").value.id;
-  try {
-    await $fetch(`/api/rooms/${roomID}/players`, {
-      method: "DELETE",
-      body: {
-        id: id,
-      },
-    });
-
-    clearGameCookies();
-
-    navigateTo(`/hostOrJoin`);
-  } catch (error) {
-    console.error("Error communicating with internal API:", error);
-    throw createError({
-      statusCode: 500,
-      message: "Failed to communicate with internal API",
-    });
-  }
+  navigateTo(`/hostOrJoin`);
 }
 
 async function startRoom() {
