@@ -4,8 +4,7 @@ import type { Player } from "~/util/models";
  * Extracts and validates player ID from browser cookies
  * @returns Player UUID string or undefined if not found
  */
-export const getIDFromCookie = ():
-  string => {
+export const getIDFromCookie = (): string => {
   // Access player cookie using Nuxt's composable
   const playerCookie = useCookie("playerUUID");
   const playerStr: string = playerCookie.value ?? "";

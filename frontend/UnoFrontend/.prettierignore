@@ -134,3 +134,6 @@ yarn-error.log
 README.md
 tsconfig.json
 nuxt.config.ts
+
+package.json
+package-lock.json
