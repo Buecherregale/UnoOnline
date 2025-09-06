@@ -145,3 +145,5 @@ The payloads send and received by the websocket.
 **Structure:**  
 - `Players` (\[\][Player](/docs/backend/models.md#player)): The players in the room.
 
+**Note:** This is different from [GameStart](#gamestart), which is send, when the card game itself starts.
+
