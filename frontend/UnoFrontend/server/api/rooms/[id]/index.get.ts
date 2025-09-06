@@ -1,33 +1,31 @@
 import { Room } from "~/util/models";
 
 /**
- * Server API endpoint to create a new game room
+ * Server API endpoint to get rooms information
  * Acts as proxy between frontend and Go backend
  *
- * @route POST /api/room
+ * @route GET /api/rooms/{id}
  * @param event - Nuxt event handler context
- * @returns Promise<Room> - Created room with player as owner
+ * @returns Promise<Room> - Room data with current players
  */
 export default defineEventHandler(async (event): Promise<Room> => {
   // Get backend API URL from runtime config
   const { apiBase } = useRuntimeConfig().public as { apiBase: string };
 
-  // Extract player ID from request body
-  const body = await readBody(event);
-  const { id } = body;
+  // Extract rooms ID from URL parameters
+  const id = getRouterParam(event, "id");
+
+  // Initialize rooms object
   let room = {} as Room;
 
   try {
-    // Forward room creation request to Go backend
-    const externalResponse: string = await $fetch("/room", {
-      method: "POST",
-      body: {
-        id: id,
-      },
+    // Fetch rooms data from Go backend
+    const externalResponse: string = await $fetch(`/rooms/${id}`, {
+      method: "GET",
       baseURL: apiBase,
     });
 
-    // Parse and return room data from backend
+    // Parse and return rooms data
     room = JSON.parse(externalResponse);
     return room;
   } catch (error) {

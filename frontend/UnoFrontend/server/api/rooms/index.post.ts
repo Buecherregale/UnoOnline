@@ -1,33 +1,36 @@
+import { Room } from "~/util/models";
+
 /**
- * Server API endpoint to remove a player from a room
+ * Server API endpoint to create a new game rooms
  * Acts as proxy between frontend and Go backend
  *
- * @route DELETE /api/room/{id}/players
+ * @route POST /api/rooms
  * @param event - Nuxt event handler context
- * @returns Promise<void> - No content returned
+ * @returns Promise<Room> - Created rooms with player as owner
  */
-export default defineEventHandler(async (event): Promise<void> => {
+export default defineEventHandler(async (event): Promise<Room> => {
   // Get backend API URL from runtime config
   const { apiBase } = useRuntimeConfig().public as { apiBase: string };
-
-  // Extract room ID from URL parameters
-  const roomID = getRouterParam(event, "id");
 
   // Extract player ID from request body
   const body = await readBody(event);
   const { id } = body;
+  let room = {} as Room;
 
   try {
-    // Send leave request to Go backend
-    await $fetch(`/room/${roomID}/players`, {
-      method: "DELETE",
-      baseURL: apiBase,
+    // Forward rooms creation request to Go backend
+    const externalResponse: string = await $fetch("/rooms", {
+      method: "POST",
       body: {
         id: id,
       },
+      baseURL: apiBase,
     });
+
+    // Parse and return rooms data from backend
+    room = JSON.parse(externalResponse);
+    return room;
   } catch (error) {
-    // Log error and return 500 status
     console.error("Error communicating with external API:", error);
     throw createError({
       statusCode: 500,

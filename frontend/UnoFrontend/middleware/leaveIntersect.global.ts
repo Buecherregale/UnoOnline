@@ -18,7 +18,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
     if (!window.confirm("You are in a Lobby are you Sure you want to leave?")) {
       return abortNavigation();
     }
-    // Clear room state when leaving confirmed
-    useState<Room | null>("room").value = null;
+    // Clear rooms state when leaving confirmed
+    useState<Room | null>("rooms").value = null;
   }
 });

@@ -1,35 +1,32 @@
 <script setup lang="ts">
 import type { Room } from "~/util/models";
 import { getIDFromCookie } from "~/util/getIDFromCookie";
-import { process } from "std-env";
+import { saveGameStateToCookies } from "~/util/cookieHelpers";
 
 const showPopupHost = ref(false);
 const showPopupJoin = ref(false);
 const selectedPlayerCount = ref(2);
 const enteredLobbyID = ref("");
 
-function saveRoomToSession(room: Room, host: boolean) {
-  if (process.client) {
-    sessionStorage.setItem("room", JSON.stringify(room));
-    sessionStorage.setItem("isHost", host.toString());
-  }
-}
-
 async function confirmedHost() {
   showPopupHost.value = false;
   const id = getIDFromCookie();
   try {
-    const responseRoom: Room = await $fetch<Room>("/api/room", {
+    const responseRoom: Room = await $fetch<Room>("/api/rooms", {
       method: "POST",
       body: {
         id: id,
       },
     });
     console.log(responseRoom);
-    const room = useState("room", () => responseRoom);
+
+    // Verwende Cookie-Helper anstatt sessionStorage
+    saveGameStateToCookies(responseRoom, true);
+
+    const room = useState("rooms", () => responseRoom);
     const isHost = useState("isHost", () => true);
     const roomID = responseRoom.id;
-    saveRoomToSession(responseRoom, true);
+
     navigateTo(`/lobby-${roomID}`);
   } catch (error) {
     console.error("Error communicating with internal API:", error);
@@ -41,12 +38,12 @@ async function confirmedHost() {
 }
 
 async function confirmedJoin() {
-  showPopupHost.value = false;
+  showPopupJoin.value = false;
   const id = getIDFromCookie();
   console.log(enteredLobbyID.value);
   try {
     const responseRoom: Room = await $fetch<Room>(
-      `api/room/${enteredLobbyID.value}/players`,
+      `api/rooms/${enteredLobbyID.value}/players`,
       {
         method: "POST",
         body: {
@@ -55,10 +52,14 @@ async function confirmedJoin() {
       }
     );
     console.log(responseRoom);
-    const room = useState("room", () => responseRoom);
+
+    // Verwende Cookie-Helper anstatt sessionStorage
+    saveGameStateToCookies(responseRoom, false);
+
+    const room = useState("rooms", () => responseRoom);
     const isHost = useState("isHost", () => false);
     const roomID = responseRoom.id;
-    saveRoomToSession(responseRoom, false);
+
     navigateTo(`/lobby-${roomID}`);
   } catch (error) {
     console.error("Error communicating with internal API:", error);

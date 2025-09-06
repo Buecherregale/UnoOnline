@@ -1,5 +1,5 @@
 /**
- * API wrapper class for room-related operations
+ * API wrapper class for rooms-related operations
  */
 export class RoomFetches {
   baseURL: string;
@@ -16,13 +16,13 @@ export class RoomFetches {
   }
 
   /**
-   * Create a new room via API
-   * @param playerID - ID of player creating the room
+   * Create a new rooms via API
+   * @param playerID - ID of player creating the rooms
    * @param baseURL - Backend API base URL
    */
   async createRoom(playerID: string, baseURL: string) {
-    // Make POST request to create room
-    const { data: room, error } = await useFetch("/room", {
+    // Make POST request to create rooms
+    const { data: room, error } = await useFetch("/rooms", {
       method: "POST",
       body: {
         id: playerID,
