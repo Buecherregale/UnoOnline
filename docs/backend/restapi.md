@@ -14,7 +14,7 @@
 - **Request Body:** 
   - `id` (UUID): The id of the player to own the room.  
 - **Response:**
-  - `201 - Created`: Room successfully created.
+  - `201 - Created` ([Room](/docs/backend/models.md#room)): Room successfully created.
   - **Error Responses:**
     -  `404 - Not found`: Player does not exist.
 ---

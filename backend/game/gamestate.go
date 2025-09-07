@@ -53,7 +53,7 @@ func (state *GameState) DrawCards(target *GamePlayer, amount int) {
 		card := state.Deck.Draw()
 		target.Hand = append(target.Hand, card)
 		target.WsP.SendMessage("YouDrawCardPayload", ws.YouDrawCardPayload{
-			Cards: []interface{}{card},
+			Cards: []any{card},
 		})
 	}
 	state.WsRoom.BroadcastMessage("PlayerDrawsCardsPayload", ws.PlayerDrawsCardsPayload{

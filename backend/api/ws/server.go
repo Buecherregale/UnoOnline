@@ -22,9 +22,15 @@ type Message struct {
 
 type MsgReceiver func(roomId, playerId uuid.UUID, msg Message)
 
+type WsConn interface {
+	ReadJSON(v any) error
+	WriteJSON(v any) error
+	Close() error
+}
+
 type WsPlayer struct {
 	id           uuid.UUID
-	conn         *websocket.Conn
+	conn         WsConn
 	sendChan     chan Message
 	responseChan map[uuid.UUID]chan Message
 	mutex        sync.Mutex
@@ -168,7 +174,6 @@ func (player *WsPlayer) readMessages(room *WsRoom) {
 
 func (player *WsPlayer) writeMessages() {
 	defer player.conn.Close()
-
 	for msg := range player.sendChan {
 		err := player.conn.WriteJSON(msg)
 		if err != nil {
@@ -177,3 +182,4 @@ func (player *WsPlayer) writeMessages() {
 		}
 	}
 }
+

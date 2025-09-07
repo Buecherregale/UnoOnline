@@ -5,7 +5,7 @@ Both REST Api and websocket communicate with these dtos, containing the necessar
 - `Name` (string): Display name of the player.
 ### Room
 - `Id` (UUID): Unique room id used in endpoint parameters. 
-- `Players` (Player[]): Current players in the room.
+- `Players` ([]Player): Current players in the room.
 - `Owner` (Player): Owning player - the one able to start the game. 
  ### Card
  There is no card dto type. In go cards are denoted as `any` (see [messages.go](/backend/api/ws/messages.go)).  
