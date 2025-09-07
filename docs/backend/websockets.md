@@ -45,12 +45,12 @@ The payloads send and received by the websocket.
 **Send to:** All players    
 **Send when:** A player wins the game.    
 **Structure:**
-- `Player` ([player](/docs/backend/models.md#player)): The player that won.
+- `Player` ([Player](/docs/backend/models.md#player)): The player that won.
 ### PlayerDrawsCards  
 **Send to:** All players  
 **Send when:** A player draws cards, e.g. forced by +2 cards or not having any fitting or initial dealing.   
 **Structure:**   
-- `Player` ([player](/docs/backend/models.md#player)): The player that draws the cards. 
+- `Player` ([Player](/docs/backend/models.md#player)): The player that draws the cards. 
 - `Amount` (int): The number of cards drawn.
 
 ### PlayerSkipped
@@ -69,7 +69,7 @@ The payloads send and received by the websocket.
 **Send to:** All players  
 **Send when:** A player chooses the color after playing a wildcard.  
 **Structure:**   
-- `Player` ([player](/docs/backend/models.md#player)): The player who chose the color. 
+- `Player` ([Player](/docs/backend/models.md#player)): The player who chose the color. 
 - `Color` (int): The chosen color.
 
 ### AskColor
