@@ -49,7 +49,7 @@ func MockWsPlayer(conn WsConn, room *WsRoom) *WsPlayer {
 	}
 	go player.writeMessages()
 	if room != nil {
-		room.Players[player.id] = &player
+		room.AddPlayer(&player)
 		go player.readMessages(room)
 	}
 	return &player
