@@ -27,6 +27,9 @@ const isHost = useState<boolean>("isHost", () => {
 
 const players = ref(room?.value?.players);
 
+// WebSocket instance - use ref to maintain single instance
+const wsHelper = ref<WebSocketHelper | null>(null);
+
 // Save rooms to cookie whenever it changes
 watch(
   room,
@@ -48,12 +51,37 @@ onMounted(async () => {
   }
   players.value = room.value?.players || [];
 
-  let wSH = new WebSocketHelper(player!.id, id as string);
-  wSH.playerJoined(player!)
+  // Only create WebSocket connection if it doesn't exist
+  if (!wsHelper.value) {
+    wsHelper.value = new WebSocketHelper(player!.id, id as string);
 
+    // Set callback to update room when someone joins
+    wsHelper.value.setRoomUpdateCallback((updatedRoom: Room) => {
+      console.log('Room updated:', updatedRoom);
+      room.value = updatedRoom;
+      players.value = updatedRoom.players;
+    });
+
+
+    wsHelper.value.playerJoined(player!);
+
+  }
+});
+
+// Clean up WebSocket connection when component is unmounted
+onBeforeUnmount(() => {
+  if (wsHelper.value) {
+    wsHelper.value.disconnect();
+    wsHelper.value = null;
+  }
 });
 
 async function leaveRoom() {
+  // Disconnect WebSocket before leaving
+  if (wsHelper.value) {
+    wsHelper.value.disconnect();
+    wsHelper.value = null;
+  }
   navigateTo(`/hostOrJoin`);
 }
 
