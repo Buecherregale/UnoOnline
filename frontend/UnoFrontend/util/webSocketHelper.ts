@@ -99,13 +99,16 @@ export default class WebSocketHelper {
       const msg: message = JSON.parse(event.data);
       console.log('Message received:', msg);
 
+      let player: Player | null  = null;
+      let newOwner: Player | null = null;
       switch (msg.type) {
         case 'RoomJoinPayload':
-          console.log('RoomJoinPayload:', msg.payload, typeof msg.payload);
-          const player: Player = JSON.parse(msg.payload);
+          player = msg.payload.player as Player;
           this.eventHandlers.onPlayerJoined?.(player);
           break;
-        case 'PlayerLeftPayload':
+        case 'RoomLeftPayload':
+          player = msg.payload.player as Player;
+          newOwner = msg.payload.newOwner as Player | null;
           this.eventHandlers.onPlayerLeft?.(msg.payload);
           break;
         case 'GameStartedPayload':
