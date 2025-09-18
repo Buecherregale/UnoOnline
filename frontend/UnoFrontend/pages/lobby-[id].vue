@@ -3,7 +3,8 @@ import type { Room, Player } from "~/util/models";
 import {
   loadRoomFromCookie,
   getHostStatusFromCookie,
-  saveRoomToCookie, saveHostStatusToCookie,
+  saveRoomToCookie,
+  saveHostStatusToCookie,
 } from "~/util/roomCookie";
 import WebSocketHelper, {
   type WebSocketEventHandlers,
@@ -78,9 +79,9 @@ onMounted(async (): Promise<void> => {
         // Update room owner
         room.value!.owner = newOwner;
         // Update status if current player is the new owner
-        if(newOwner.id === player.id) {
+        if (newOwner.id === player.id) {
           isHost.value = true;
-          saveHostStatusToCookie(true)
+          saveHostStatusToCookie(true);
         }
       },
       onError: (error: Error): void => {
