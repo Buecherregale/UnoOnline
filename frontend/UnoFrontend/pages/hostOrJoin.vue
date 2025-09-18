@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import type { Room, CreateRoomRequest, JoinRoomRequest } from "~/util/models";
+import type {
+  Room,
+  CreateRoomRequest,
+  JoinRoomRequest,
+  Player,
+} from "~/util/models";
 import { saveGameStateToCookies } from "~/util/roomCookie";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 
@@ -9,10 +14,7 @@ const showPopupJoin = ref<boolean>(false);
 const selectedPlayerCount = ref<number>(2);
 const enteredLobbyID = ref<string>("");
 
-/**
- * Handles host game confirmation with proper error handling
- */
-async function confirmedHost(): Promise<void> {
+async function preLobby(): Promise<Player> {
   showPopupHost.value = false;
   const player = loadPlayerFromCookie();
 
@@ -22,6 +24,25 @@ async function confirmedHost(): Promise<void> {
       message: "Player not found in session",
     });
   }
+
+  return player;
+}
+
+async function postLobby(room: Room, isHost: boolean): Promise<void> {
+  saveGameStateToCookies(room, isHost);
+
+  useState<Room>("rooms", () => room);
+  useState<boolean>("isHost", () => false);
+  const roomID: string = room.id;
+
+  await navigateTo(`/lobby-${roomID}`);
+}
+
+/**
+ * Handles host game confirmation with proper error handling
+ */
+async function confirmedHost(): Promise<void> {
+  const player = await preLobby();
 
   try {
     const requestBody: CreateRoomRequest = {
@@ -34,14 +55,7 @@ async function confirmedHost(): Promise<void> {
       body: requestBody,
     });
 
-    // Use cookie helper instead of sessionStorage
-    saveGameStateToCookies(responseRoom, true);
-
-    useState<Room>("rooms", () => responseRoom);
-    useState<boolean>("isHost", () => true);
-    const roomID: string = responseRoom.id;
-
-    await navigateTo(`/lobby-${roomID}`);
+    await postLobby(responseRoom, true);
   } catch (error) {
     console.error("Error communicating with internal API:", error);
     throw createError({
@@ -55,17 +69,7 @@ async function confirmedHost(): Promise<void> {
  * Handles join game confirmation with proper error handling
  */
 async function confirmedJoin(): Promise<void> {
-  showPopupJoin.value = false;
-  const player = loadPlayerFromCookie();
-
-  if (!player?.id) {
-    throw createError({
-      statusCode: 400,
-      message: "Player not found in session",
-    });
-  }
-
-  console.log(enteredLobbyID.value);
+  const player = await preLobby();
 
   try {
     const requestBody: JoinRoomRequest = {
@@ -79,15 +83,8 @@ async function confirmedJoin(): Promise<void> {
         body: requestBody,
       }
     );
-    console.log(responseRoom);
 
-    saveGameStateToCookies(responseRoom, false);
-
-    useState<Room>("rooms", () => responseRoom);
-    useState<boolean>("isHost", () => false);
-    const roomID: string = responseRoom.id;
-
-    await navigateTo(`/lobby-${roomID}`);
+    await postLobby(responseRoom, false);
   } catch (error) {
     console.error("Error communicating with internal API:", error);
     throw createError({
