@@ -95,6 +95,10 @@ export interface JoinRoomRequest {
   id: string;
 }
 
+export interface LeaveRoomRequest {
+    id: string;
+}
+
 // Navigation Types
 export interface NavigationState {
   player: Player | null;

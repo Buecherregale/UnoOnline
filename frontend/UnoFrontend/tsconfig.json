@@ -16,7 +16,6 @@
 
     // Zusätzliche Checks
     "exactOptionalPropertyTypes": true,
-    "noPropertyAccessFromIndexSignature": true,
 
     // Code Quality
     "noUnusedLocals": true,

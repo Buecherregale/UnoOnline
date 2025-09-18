@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Room, Player } from "~/util/models";
+import type {Room, Player } from "~/util/models";
 import {
   loadRoomFromCookie,
   getHostStatusFromCookie,
