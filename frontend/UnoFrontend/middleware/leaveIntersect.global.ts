@@ -1,4 +1,4 @@
-import type { Room } from "~/util/models";
+import type { LeaveRoomRequest, Room} from "~/util/models";
 import { clearGameCookies, loadRoomFromCookie } from "~/util/roomCookie";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 
@@ -26,12 +26,14 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     const currentRoom = loadRoomFromCookie();
     const roomID = currentRoom?.id || from.fullPath.split("lobby-")[1];
 
+    const requestBody: LeaveRoomRequest = {
+        id: id!,
+    };
+
     try {
       await $fetch(`/api/rooms/${roomID}/players`, {
         method: "DELETE",
-        body: {
-          id: id,
-        },
+        body: requestBody
       });
 
       useState<Room | null>("rooms").value = null;

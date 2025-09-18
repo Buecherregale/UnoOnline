@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Room, Player } from "~/util/models";
+import type {Room, Player, StartGameRequest} from "~/util/models";
 import {
   loadRoomFromCookie,
   getHostStatusFromCookie,
@@ -10,6 +10,7 @@ import WebSocketHelper, {
   type WebSocketEventHandlers,
 } from "~/util/webSocketHelper";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
+import {handleApiError, validatePlayerSession} from "~/util/errorUtils";
 
 definePageMeta({
   middleware: ["check-join"],
@@ -120,6 +121,24 @@ async function leaveRoom(): Promise<void> {
  * Handles starting the game (host only)
  */
 async function startRoom(): Promise<void> {
+
+  const player = loadPlayerFromCookie();
+  validatePlayerSession(player)
+
+  try {
+    const requestBody: StartGameRequest = {
+      id: player.id,
+    };
+
+    //start the game via api call
+    await $fetch<Room>(`/api/rooms/${id}`,  {
+      method: "POST",
+      body: requestBody,
+    })
+  } catch (error) {
+    handleApiError(error)
+  }
+
   await navigateTo(`/game/${id}`);
 }
 </script>

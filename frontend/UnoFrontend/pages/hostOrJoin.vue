@@ -16,7 +16,6 @@ const { createRoom, joinRoom, enterLobby } = useRoomActions();
  */
 async function confirmedHost(): Promise<void> {
   isLoading.value = true;
-  await new Promise((r) => setTimeout(r, 2000));
   errorMessage.value = "";
 
   try {
