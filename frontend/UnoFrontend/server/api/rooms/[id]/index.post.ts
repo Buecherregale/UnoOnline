@@ -1,4 +1,5 @@
-import { getIDFromCookie } from "~/util/getIDFromCookie";
+import {loadPlayerFromCookie} from "~/util/playerCookie";
+
 
 /**
  * Server API endpoint to start a rooms
@@ -15,7 +16,7 @@ export default defineEventHandler(async (event): Promise<boolean> => {
   // Extract rooms ID from URL parameters
   const id = getRouterParam(event, "id");
   // get Player from Cookies
-  const player = getIDFromCookie();
+  const player = loadPlayerFromCookie()!.id;
 
   try {
     // Fetch rooms data from Go backend

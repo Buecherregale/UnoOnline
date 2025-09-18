@@ -1,7 +1,6 @@
 import type { Room } from "~/util/models";
-import { clearGameCookies, getRoomFromCookie } from "~/util/cookieHelpers";
-import { getIDFromCookie } from "~/util/getIDFromCookie";
-import path from "pathe";
+import { clearGameCookies, loadRoomFromCookie } from "~/util/roomCookie";
+import {loadPlayerFromCookie} from "~/util/playerCookie";
 
 /**
  * Global middleware to warn users before leaving active lobbies
@@ -22,8 +21,9 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       return abortNavigation();
     }
 
-    const id = getIDFromCookie();
-    const currentRoom = getRoomFromCookie();
+    const player = loadPlayerFromCookie();
+    const id = player?.id;
+    const currentRoom = loadRoomFromCookie();
     const roomID = currentRoom?.id || from.fullPath.split("lobby-")[1];
 
     try {

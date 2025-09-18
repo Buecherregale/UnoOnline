@@ -1,4 +1,5 @@
 import type { Player } from "~/util/models";
+import {loadPlayerFromCookie} from "~/util/playerCookie";
 
 /**
  * Global authentication middleware
@@ -8,12 +9,10 @@ export default defineNuxtRouteMiddleware((to, from) => {
   // Skip authentication check for login page
   if (to.fullPath !== "/login") {
     // Get player data from cookie
-    const playerCookie = useCookie("playerUUID");
-    const playerStr: string = playerCookie.value ?? "";
-    const player: Player = JSON.parse(JSON.stringify(playerStr));
+    const player: Player | null = loadPlayerFromCookie();
 
     // Redirect to login if no valid player ID
-    if (!player.id) {
+    if (!player) {
       return navigateTo("/login");
     }
   }
