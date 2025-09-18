@@ -1,6 +1,6 @@
 import type { Room } from "~/util/models";
 import { clearGameCookies, loadRoomFromCookie } from "~/util/roomCookie";
-import {loadPlayerFromCookie} from "~/util/playerCookie";
+import { loadPlayerFromCookie } from "~/util/playerCookie";
 
 /**
  * Global middleware to warn users before leaving active lobbies

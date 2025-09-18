@@ -4,10 +4,10 @@ import type { message, Player } from "~/util/models";
  * WebSocket connection states
  */
 export enum WebSocketState {
-  CONNECTING = 'connecting',
-  CONNECTED = 'connected',
-  DISCONNECTED = 'disconnected',
-  ERROR = 'error'
+  CONNECTING = "connecting",
+  CONNECTED = "connected",
+  DISCONNECTED = "disconnected",
+  ERROR = "error",
 }
 
 /**
@@ -41,13 +41,17 @@ export default class WebSocketHelper {
   private eventHandlers: WebSocketEventHandlers = {};
   private reconnectAttempts: number = 0;
 
-  constructor(playerId: string, roomId: string, baseUrl: string = 'ws://localhost:8080') {
+  constructor(
+    playerId: string,
+    roomId: string,
+    baseUrl: string = "ws://localhost:8080"
+  ) {
     this.config = {
       playerId,
       roomId,
       baseUrl,
       reconnectAttempts: 3,
-      reconnectDelay: 1000
+      reconnectDelay: 1000,
     };
 
     this.connect();
@@ -64,7 +68,7 @@ export default class WebSocketHelper {
       this.socket = new WebSocket(url);
 
       this.socket.onopen = (): void => {
-        console.log('WebSocket connected');
+        console.log("WebSocket connected");
         this.setState(WebSocketState.CONNECTED);
         this.reconnectAttempts = 0;
         this.processMessageQueue();
@@ -75,15 +79,15 @@ export default class WebSocketHelper {
       };
 
       this.socket.onclose = (event: CloseEvent): void => {
-        console.log('WebSocket closed:', event.code, event.reason);
+        console.log("WebSocket closed:", event.code, event.reason);
         this.setState(WebSocketState.DISCONNECTED);
         this.handleReconnection();
       };
 
       this.socket.onerror = (event: Event): void => {
-        console.error('WebSocket error:', event);
+        console.error("WebSocket error:", event);
         this.setState(WebSocketState.ERROR);
-        this.eventHandlers.onError?.(new Error('WebSocket connection failed'));
+        this.eventHandlers.onError?.(new Error("WebSocket connection failed"));
       };
     } catch (error) {
       this.setState(WebSocketState.ERROR);
@@ -97,28 +101,28 @@ export default class WebSocketHelper {
   private handleMessage(event: MessageEvent): void {
     try {
       const msg: message = JSON.parse(event.data);
-      console.log('Message received:', msg);
+      console.log("Message received:", msg);
 
-      let player: Player | null  = null;
+      let player: Player | null = null;
       let newOwner: Player | null = null;
       switch (msg.type) {
-        case 'RoomJoinPayload':
+        case "RoomJoinPayload":
           player = msg.payload.player as Player;
           this.eventHandlers.onPlayerJoined?.(player);
           break;
-        case 'RoomLeftPayload':
+        case "RoomLeftPayload":
           player = msg.payload.player as Player;
           newOwner = msg.payload.newOwner as Player | null;
           this.eventHandlers.onPlayerLeft?.(msg.payload);
           break;
-        case 'GameStartedPayload':
+        case "GameStartedPayload":
           this.eventHandlers.onGameStarted?.(msg.payload);
           break;
         default:
-          console.warn('Unknown message type:', msg.type);
+          console.warn("Unknown message type:", msg.type);
       }
     } catch (error) {
-      console.error('Error parsing WebSocket message:', error);
+      console.error("Error parsing WebSocket message:", error);
       this.eventHandlers.onError?.(error as Error);
     }
   }
@@ -151,14 +155,18 @@ export default class WebSocketHelper {
   private handleReconnection(): void {
     if (this.reconnectAttempts < this.config.reconnectAttempts) {
       this.reconnectAttempts++;
-      console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.config.reconnectAttempts})`);
+      console.log(
+        `Attempting to reconnect... (${this.reconnectAttempts}/${this.config.reconnectAttempts})`
+      );
 
       setTimeout(() => {
         this.connect();
       }, this.config.reconnectDelay * this.reconnectAttempts);
     } else {
-      console.error('Max reconnection attempts reached');
-      this.eventHandlers.onError?.(new Error('Connection lost and max reconnection attempts reached'));
+      console.error("Max reconnection attempts reached");
+      this.eventHandlers.onError?.(
+        new Error("Connection lost and max reconnection attempts reached")
+      );
     }
   }
 
@@ -169,15 +177,15 @@ export default class WebSocketHelper {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       try {
         this.socket.send(JSON.stringify(message));
-        console.log('Message sent:', message);
+        console.log("Message sent:", message);
         return true;
       } catch (error) {
-        console.error('Error sending message:', error);
+        console.error("Error sending message:", error);
         this.eventHandlers.onError?.(error as Error);
         return false;
       }
     } else {
-      console.warn('WebSocket is not connected, message queued');
+      console.warn("WebSocket is not connected, message queued");
       return false;
     }
   }
@@ -190,7 +198,7 @@ export default class WebSocketHelper {
       this.sendMessage(message);
     } else {
       this.messageQueue.push(message);
-      console.log('Message queued:', message);
+      console.log("Message queued:", message);
     }
   }
 
@@ -200,8 +208,10 @@ export default class WebSocketHelper {
    * Checks if WebSocket is currently connected
    */
   public isConnected(): boolean {
-    return this.state === WebSocketState.CONNECTED &&
-           this.socket?.readyState === WebSocket.OPEN;
+    return (
+      this.state === WebSocketState.CONNECTED &&
+      this.socket?.readyState === WebSocket.OPEN
+    );
   }
 
   /**
@@ -230,8 +240,8 @@ export default class WebSocketHelper {
    */
   public playerJoined(player: Player): void {
     const message: message = {
-      type: 'RoomJoinPayload',
-      payload: JSON.stringify(player)
+      type: "RoomJoinPayload",
+      payload: JSON.stringify(player),
     };
     this.queueMessage(message);
   }
@@ -241,8 +251,8 @@ export default class WebSocketHelper {
    */
   public playerLeft(playerId: string): void {
     const message: message = {
-      type: 'PlayerLeftPayload',
-      payload: playerId
+      type: "PlayerLeftPayload",
+      payload: playerId,
     };
     this.queueMessage(message);
   }
@@ -252,8 +262,8 @@ export default class WebSocketHelper {
    */
   public startGame(): void {
     const message: message = {
-      type: 'StartGamePayload',
-      payload: this.config.roomId
+      type: "StartGamePayload",
+      payload: this.config.roomId,
     };
     this.queueMessage(message);
   }
@@ -263,7 +273,7 @@ export default class WebSocketHelper {
    */
   public disconnect(): void {
     if (this.socket) {
-      this.socket.close(1000, 'Manual disconnect');
+      this.socket.close(1000, "Manual disconnect");
       this.socket = null;
     }
     this.setState(WebSocketState.DISCONNECTED);

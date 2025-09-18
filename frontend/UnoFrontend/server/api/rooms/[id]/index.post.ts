@@ -1,5 +1,4 @@
-import {loadPlayerFromCookie} from "~/util/playerCookie";
-
+import { loadPlayerFromCookie } from "~/util/playerCookie";
 
 /**
  * Server API endpoint to start a rooms

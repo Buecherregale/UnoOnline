@@ -9,40 +9,38 @@ const COOKIE_OPTIONS = {
  * saves rooms data to a cookie
  */
 export function saveRoomToCookie(room: Room): void {
-    try {
-        const roomCookie = useCookie<Room | null>("uno-rooms", {
-            ...COOKIE_OPTIONS,
-            default: () => null,
-        });
+  try {
+    const roomCookie = useCookie<Room | null>("uno-rooms", {
+      ...COOKIE_OPTIONS,
+      default: () => null,
+    });
 
-        roomCookie.value = room;
-        console.log("Room saved to cookie:", { roomId: room.id });
-    } catch (error) {
-        console.error("Failed to save rooms to cookie:", error);
-    }
+    roomCookie.value = room;
+    console.log("Room saved to cookie:", { roomId: room.id });
+  } catch (error) {
+    console.error("Failed to save rooms to cookie:", error);
+  }
 }
-
 
 /**
  * loads rooms data from a cookie
  */
 export function loadRoomFromCookie(): Room | null {
-    try {
-        const roomCookie = useCookie<Room | null>("uno-rooms", {
-            ...COOKIE_OPTIONS,
-            default: () => null,
-        });
+  try {
+    const roomCookie = useCookie<Room | null>("uno-rooms", {
+      ...COOKIE_OPTIONS,
+      default: () => null,
+    });
 
-        const cookieValue = roomCookie.value;
-        console.log("Room loaded from cookie:", cookieValue);
+    const cookieValue = roomCookie.value;
+    console.log("Room loaded from cookie:", cookieValue);
 
-        return cookieValue;
-    } catch (error) {
-        console.error("Failed to load rooms from cookie:", error);
-        return null;
-    }
+    return cookieValue;
+  } catch (error) {
+    console.error("Failed to load rooms from cookie:", error);
+    return null;
+  }
 }
-
 
 /**
  * saves host status to a cookie

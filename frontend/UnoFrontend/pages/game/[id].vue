@@ -2,7 +2,6 @@
 import type { Player, Room, PlayerWithPosition } from "~/util/models";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 
-
 const route = useRoute();
 const gameId: string = route.params.id as string;
 const room = ref<Room | null>(null);
