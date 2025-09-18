@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Player, CreatePlayerRequest } from "~/util/models";
 import { savePlayerToCookie } from "~/util/playerCookie";
+import {handleApiError} from "~/util/errorUtils";
 
 // Reactive state with explicit types
 const name = ref<string>("");
@@ -16,11 +17,7 @@ const playerFetches = async (name: string): Promise<Player> => {
       body: requestBody,
     });
   } catch (error) {
-    console.error("Error communicating with internal API:", error);
-    throw createError({
-      statusCode: 500,
-      message: "Failed to communicate with internal API",
-    });
+    handleApiError(error)
   }
 };
 

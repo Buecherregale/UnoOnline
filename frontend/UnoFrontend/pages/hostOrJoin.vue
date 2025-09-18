@@ -6,20 +6,28 @@ const showPopupHost = ref<boolean>(false);
 const showPopupJoin = ref<boolean>(false);
 const selectedPlayerCount = ref<number>(2);
 const enteredLobbyID = ref<string>("");
+const isLoading = ref<boolean>(false);
+const errorMessage = ref<string>("");
 
-const { isLoading, createRoom, joinRoom, enterLobby } = useRoomActions();
+const { createRoom, joinRoom, enterLobby } = useRoomActions();
 
 /**
  * Handles host game confirmation with proper error handling
  */
 async function confirmedHost(): Promise<void> {
+  isLoading.value = true;
+  await new Promise(r => setTimeout(r, 2000));
+  errorMessage.value = "";
+
   try {
     const room = await createRoom(selectedPlayerCount.value);
     await enterLobby(room, true);
-  } catch (error) {
-    console.error("Error creating room:", error);
-  } finally {
     showPopupHost.value = false;
+  } catch (error) {
+    errorMessage.value =
+      error instanceof Error ? error.message : "Ein unerwarteter Fehler ist aufgetreten";
+  } finally {
+    isLoading.value = false;
   }
 }
 
@@ -27,14 +35,25 @@ async function confirmedHost(): Promise<void> {
  * Handles join game confirmation with proper error handling
  */
 async function confirmedJoin(): Promise<void> {
+  isLoading.value = true;
+  errorMessage.value = "";
+
   try {
     const room = await joinRoom(enteredLobbyID.value);
     await enterLobby(room, false);
-  } catch (error) {
-    console.error("Error joining room:", error);
-  } finally {
     showPopupJoin.value = false;
+  } catch (error) {
+    errorMessage.value =
+      error instanceof Error ? error.message : "Ein unerwarteter Fehler ist aufgetreten";
+  } finally {
+    isLoading.value = false;
   }
+}
+
+function closeModal(): void {
+  showPopupHost.value = false;
+  showPopupJoin.value = false;
+  errorMessage.value = "";
 }
 </script>
 
@@ -66,12 +85,18 @@ async function confirmedJoin(): Promise<void> {
     <UiModal
       :is-open="showPopupHost"
       title="Select Number of Players"
-      @close="showPopupHost = false"
+      :confirm-text="isLoading ? 'Erstelle...' : 'OK'"
+      @close="closeModal"
       @confirm="confirmedHost"
     >
+      <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        {{ errorMessage }}
+      </div>
+
       <select
         v-model="selectedPlayerCount"
         class="w-full p-2 border border-gray-300 rounded mb-4"
+        :disabled="isLoading"
       >
         <option v-for="n in 7" :key="n" :value="n + 1">{{ n + 1 }}</option>
       </select>
@@ -81,26 +106,30 @@ async function confirmedJoin(): Promise<void> {
     <UiModal
       :is-open="showPopupJoin"
       title="Enter Lobby ID"
-      @close="showPopupJoin = false"
+      :confirm-text="isLoading ? 'Beitrete...' : 'OK'"
+      @close="closeModal"
       @confirm="confirmedJoin"
     >
+      <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        {{ errorMessage }}
+      </div>
+
       <input
         v-model="enteredLobbyID"
         class="w-full p-2 border border-gray-300 rounded mb-4"
         placeholder="Enter Lobby ID"
+        :disabled="isLoading"
       />
     </UiModal>
 
-    <!-- Loading Overlay -->
+    <!-- Simple Loading Overlay -->
     <div
       v-if="isLoading"
       class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
     >
-      <div class="bg-white p-8 rounded-lg shadow-lg">
-        <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"
-        ></div>
-        <p class="mt-4 text-center">Loading...</p>
+      <div class="bg-white p-8 rounded-lg shadow-lg flex items-center gap-4">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+        <span>Loading...</span>
       </div>
     </div>
   </div>
