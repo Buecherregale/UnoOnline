@@ -99,6 +99,10 @@ export interface LeaveRoomRequest {
   id: string;
 }
 
+export interface StartGameRequest {
+    id: string;
+}
+
 // Navigation Types
 export interface NavigationState {
   player: Player | null;

@@ -14,8 +14,10 @@ export default defineEventHandler(async (event): Promise<boolean> => {
 
   // Extract rooms ID from URL parameters
   const id = getRouterParam(event, "id");
-  // get Player from Cookies
-  const player = loadPlayerFromCookie()!.id;
+  // get Player from query
+  const body = await readBody(event);
+  const playerId = body.id as string;
+  console.log(playerId);
 
   try {
     // Fetch rooms data from Go backend
@@ -23,7 +25,7 @@ export default defineEventHandler(async (event): Promise<boolean> => {
       method: "POST",
       baseURL: apiBase,
       body: {
-        id: player,
+        id: playerId,
       },
     });
 
