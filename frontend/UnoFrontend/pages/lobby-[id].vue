@@ -3,7 +3,7 @@ import type { Room, Player } from "~/util/models";
 import {
   loadRoomFromCookie,
   getHostStatusFromCookie,
-  saveRoomToCookie,
+  saveRoomToCookie, saveHostStatusToCookie,
 } from "~/util/roomCookie";
 import WebSocketHelper, {
   type WebSocketEventHandlers,
@@ -67,6 +67,22 @@ onMounted(async (): Promise<void> => {
         console.log("new Player:", newPlayer);
         players.value.push(newPlayer);
       },
+      onPlayerLeft: (oldPlayer: Player, newOwner: Player): void => {
+        console.log("Player left:", oldPlayer);
+        // Remove player from list
+        let index = players.value.findIndex((p) => p.id === oldPlayer.id);
+        console.log("index:", index);
+        if (index !== -1) {
+          players.value.splice(index, 1);
+        }
+        // Update room owner
+        room.value!.owner = newOwner;
+        // Update status if current player is the new owner
+        if(newOwner.id === player.id) {
+          isHost.value = true;
+          saveHostStatusToCookie(true)
+        }
+      },
       onError: (error: Error): void => {
         console.error("WebSocket error:", error);
         // Handle WebSocket errors appropriately
@@ -74,7 +90,6 @@ onMounted(async (): Promise<void> => {
     };
 
     wsHelper.value.setEventHandlers(eventHandlers);
-    wsHelper.value.playerJoined(player);
   }
 });
 
