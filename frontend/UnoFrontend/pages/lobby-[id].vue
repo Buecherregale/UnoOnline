@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { Room } from "~/util/models";
-import {getIDFromCookie, getPlayerFromCookie} from "~/util/getIDFromCookie";
 import {
-  getRoomFromCookie,
+  loadRoomFromCookie,
   getHostStatusFromCookie,
   saveRoomToCookie,
-} from "~/util/cookieHelpers";
+} from "~/util/roomCookie";
 import WebSocketHelper from "~/util/webSocketHelper";
+import {loadPlayerFromCookie} from "~/util/playerCookie";
 
 definePageMeta({
   middleware: ["check-join"],
@@ -14,10 +14,10 @@ definePageMeta({
 
 const route = useRoute();
 let id = route.params.id;
-const player = getPlayerFromCookie();
+const player = loadPlayerFromCookie();
 
 const room = useState<Room | null>("room", () => {
-  return getRoomFromCookie();
+  return loadRoomFromCookie();
 });
 
 // Load isHost from cookie

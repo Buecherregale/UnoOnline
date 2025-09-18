@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Room } from "~/util/models";
-import { getIDFromCookie } from "~/util/getIDFromCookie";
-import { saveGameStateToCookies } from "~/util/cookieHelpers";
+import { saveGameStateToCookies } from "~/util/roomCookie";
+import {loadPlayerFromCookie} from "~/util/playerCookie";
 
 const showPopupHost = ref(false);
 const showPopupJoin = ref(false);
@@ -10,7 +10,7 @@ const enteredLobbyID = ref("");
 
 async function confirmedHost() {
   showPopupHost.value = false;
-  const id = getIDFromCookie();
+  const id = loadPlayerFromCookie()?.id;
   try {
     const responseRoom: Room = await $fetch<Room>("/api/rooms", {
       method: "POST",
@@ -38,7 +38,7 @@ async function confirmedHost() {
 
 async function confirmedJoin() {
   showPopupJoin.value = false;
-  const id = getIDFromCookie();
+  const id = loadPlayerFromCookie()?.id;
   console.log(enteredLobbyID.value);
   try {
     const responseRoom: Room = await $fetch<Room>(

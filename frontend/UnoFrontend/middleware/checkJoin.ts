@@ -1,5 +1,5 @@
-import type { Room } from "~/util/models";
-import { getIDFromCookie } from "~/util/getIDFromCookie";
+import type {Player, Room} from "~/util/models";
+import {loadPlayerFromCookie} from "~/util/playerCookie";
 
 /**
  * Middleware for lobby routes with automatic rooms joining
@@ -32,7 +32,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     }
 
     // Get current player's ID from cookie
-    const playerID = getIDFromCookie();
+    const player: Player | null = loadPlayerFromCookie();
+    const playerID = player?.id;
 
     // Check if player is not already in the rooms
     if (room && !room?.players.some((player) => player.id === playerID)) {

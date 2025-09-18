@@ -9,43 +9,40 @@ const COOKIE_OPTIONS = {
  * saves rooms data to a cookie
  */
 export function saveRoomToCookie(room: Room): void {
-  try {
-    const roomCookie = useCookie<string>("uno-rooms", {
-      ...COOKIE_OPTIONS,
-      default: () => "",
-    });
+    try {
+        const roomCookie = useCookie<Room | null>("uno-rooms", {
+            ...COOKIE_OPTIONS,
+            default: () => null,
+        });
 
-    roomCookie.value = JSON.stringify(room);
-    console.log("Room saved to cookie:", { roomId: room.id });
-  } catch (error) {
-    console.error("Failed to save rooms to cookie:", error);
-  }
+        roomCookie.value = room;
+        console.log("Room saved to cookie:", { roomId: room.id });
+    } catch (error) {
+        console.error("Failed to save rooms to cookie:", error);
+    }
 }
+
 
 /**
  * loads rooms data from a cookie
  */
-export function getRoomFromCookie(): Room | null {
-  try {
-    const roomCookie = useCookie<string>("uno-rooms", {
-      ...COOKIE_OPTIONS,
-      default: () => "",
-    });
+export function loadRoomFromCookie(): Room | null {
+    try {
+        const roomCookie = useCookie<Room | null>("uno-rooms", {
+            ...COOKIE_OPTIONS,
+            default: () => null,
+        });
 
-    const cookieValue = roomCookie.value;
+        const cookieValue = roomCookie.value;
+        console.log("Room loaded from cookie:", cookieValue);
 
-    if (
-      (cookieValue && cookieValue !== "") ||
-      cookieValue !== "[object Object]"
-    ) {
-      return JSON.parse(roomCookie.value) as Room;
+        return cookieValue;
+    } catch (error) {
+        console.error("Failed to load rooms from cookie:", error);
+        return null;
     }
-    return null;
-  } catch (error) {
-    console.error("Failed to load rooms from cookie:", error);
-    return null;
-  }
 }
+
 
 /**
  * saves host status to a cookie
@@ -86,10 +83,10 @@ export function getHostStatusFromCookie(): boolean {
  */
 export function clearGameCookies(): void {
   try {
-    const roomCookie = useCookie<string>("uno-rooms");
+    const roomCookie = useCookie<Room | null>("uno-rooms");
     const hostCookie = useCookie<boolean>("uno-is-host");
 
-    roomCookie.value = "";
+    roomCookie.value = null;
     hostCookie.value = false;
 
     console.log("Game cookies cleared");

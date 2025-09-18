@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Player, Room } from "~/util/models";
-import { getIDFromCookie } from "~/util/getIDFromCookie";
+import {loadPlayerFromCookie} from "~/util/playerCookie";
 
 const route = useRoute();
 const gameId = route.params.id;
@@ -20,8 +20,8 @@ onMounted(async () => {
       room.value = data;
       players.value = data.players || [];
 
-      // Handle getIDFromCookie properly
-      currentPlayerId.value = getIDFromCookie();
+      // Handle playerCookie properly
+      currentPlayerId.value = loadPlayerFromCookie()!.id;
     }
   } catch (error) {
     console.error("Error fetching rooms data:", error);

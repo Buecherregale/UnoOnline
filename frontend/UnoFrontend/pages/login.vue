@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Player } from "~/util/models";
+import {savePlayerToCookie} from "~/util/playerCookie";
 
 let name = ref("");
 
@@ -23,8 +24,7 @@ const playerFetches = async (name: string): Promise<Player> => {
 async function handleSubmit() {
   if (name.value.trim()) {
     const player = await playerFetches(name.value);
-    const playerUUIDCookie = useCookie<Player>("playerUUID");
-    playerUUIDCookie.value = player;
+    savePlayerToCookie(player);
     navigateTo("/hostOrJoin");
   } else {
     alert("Please enter a valid name.");
