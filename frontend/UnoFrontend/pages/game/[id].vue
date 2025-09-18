@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { Player, Room } from "~/util/models";
-import {loadPlayerFromCookie} from "~/util/playerCookie";
+import type { Player, Room, PlayerWithPosition } from "~/util/models";
+import { loadPlayerFromCookie } from "~/util/playerCookie";
+
 
 const route = useRoute();
-const gameId = route.params.id;
+const gameId: string = route.params.id as string;
 const room = ref<Room | null>(null);
 const players = ref<Player[]>([]);
 const currentPlayerId = ref<string>("");
@@ -12,55 +13,64 @@ definePageMeta({
   middleware: ["check-join"],
 });
 
-// Fetch rooms data and initialize game
-onMounted(async () => {
+/**
+ * Fetches room data and initializes game state
+ */
+onMounted(async (): Promise<void> => {
   try {
-    const data = await $fetch<Room>(`/api/rooms/${gameId}`);
+    const data: Room = await $fetch<Room>(`/api/rooms/${gameId}`);
     if (data) {
       room.value = data;
       players.value = data.players || [];
 
-      // Handle playerCookie properly
-      currentPlayerId.value = loadPlayerFromCookie()!.id;
+      // Handle playerCookie properly with null checking
+      const currentPlayer: Player | null = loadPlayerFromCookie();
+      if (currentPlayer) {
+        currentPlayerId.value = currentPlayer.id;
+      } else {
+        throw new Error("Current player not found in session");
+      }
     }
   } catch (error) {
     console.error("Error fetching rooms data:", error);
   }
 });
 
-// Position players based on count and current player position
-const getPlayerPositions = computed(() => {
+/**
+ * Computes player positions based on count and current player position
+ */
+const getPlayerPositions = computed((): PlayerWithPosition[] => {
   if (!players.value.length) return [];
 
-  const playerCount = players.value.length;
-  const currentPlayerIndex = players.value.findIndex(
-    (p) => p.id === currentPlayerId.value
+  const playerCount: number = players.value.length;
+  const currentPlayerIndex: number = players.value.findIndex(
+    (p: Player): boolean => p.id === currentPlayerId.value
   );
 
   // Arrange players with current player always at bottom
-  const orderedPlayers = [];
+  const orderedPlayers: Player[] = [];
   for (let i = 0; i < playerCount; i++) {
-    const index = (currentPlayerIndex + i) % playerCount;
-    orderedPlayers.push(players.value[index]);
+    const index: number = (currentPlayerIndex + i) % playerCount;
+    orderedPlayers.push(players.value[index]!);
   }
 
-  const positions = [];
+  const positions: PlayerWithPosition[] = [];
 
   if (playerCount === 2) {
     // 2 players: opponent at top, current player at bottom
-    positions.push({ player: orderedPlayers[1], position: "top" });
-    positions.push({ player: orderedPlayers[0], position: "bottom" });
+    positions.push({ player: orderedPlayers[1]!, position: "top" });
+    positions.push({ player: orderedPlayers[0]!, position: "bottom" });
   } else if (playerCount === 3) {
     // 3 players: Counterclockwise from current at bottom
-    positions.push({ player: orderedPlayers[0], position: "bottom" }); // current player
-    positions.push({ player: orderedPlayers[1], position: "top" });
-    positions.push({ player: orderedPlayers[2], position: "right" });
+    positions.push({ player: orderedPlayers[0]!, position: "bottom" }); // current player
+    positions.push({ player: orderedPlayers[1]!, position: "top" });
+    positions.push({ player: orderedPlayers[2]!, position: "right" });
   } else if (playerCount === 4) {
     // 4 players: Counterclockwise from current at bottom
-    positions.push({ player: orderedPlayers[0], position: "bottom" }); // current player
-    positions.push({ player: orderedPlayers[1], position: "right" });
-    positions.push({ player: orderedPlayers[2], position: "top" });
-    positions.push({ player: orderedPlayers[3], position: "left" });
+    positions.push({ player: orderedPlayers[0]!, position: "bottom" }); // current player
+    positions.push({ player: orderedPlayers[1]!, position: "right" });
+    positions.push({ player: orderedPlayers[2]!, position: "top" });
+    positions.push({ player: orderedPlayers[3]!, position: "left" });
   }
 
   return positions;

@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import type { Player } from "~/util/models";
-import {savePlayerToCookie} from "~/util/playerCookie";
+import type { Player, CreatePlayerRequest } from "~/util/models";
+import { savePlayerToCookie } from "~/util/playerCookie";
 
-let name = ref("");
+// Reactive state with explicit types
+const name = ref<string>("");
 
+/**
+ * Fetches player data from API with proper error handling
+ */
 const playerFetches = async (name: string): Promise<Player> => {
   try {
+    const requestBody: CreatePlayerRequest = { name };
     return await $fetch<Player>("/api/playerID", {
       method: "POST",
-      body: {
-        name: name,
-      },
+      body: requestBody,
     });
   } catch (error) {
     console.error("Error communicating with internal API:", error);
@@ -21,11 +24,14 @@ const playerFetches = async (name: string): Promise<Player> => {
   }
 };
 
-async function handleSubmit() {
+/**
+ * Handles form submission with validation
+ */
+async function handleSubmit(): Promise<void> {
   if (name.value.trim()) {
-    const player = await playerFetches(name.value);
+    const player: Player = await playerFetches(name.value);
     savePlayerToCookie(player);
-    navigateTo("/hostOrJoin");
+    await navigateTo("/hostOrJoin");
   } else {
     alert("Please enter a valid name.");
   }

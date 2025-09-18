@@ -1,32 +1,47 @@
 <script setup lang="ts">
-import type { Room } from "~/util/models";
+import type { Room, CreateRoomRequest, JoinRoomRequest } from "~/util/models";
 import { saveGameStateToCookies } from "~/util/roomCookie";
-import {loadPlayerFromCookie} from "~/util/playerCookie";
+import { loadPlayerFromCookie } from "~/util/playerCookie";
 
-const showPopupHost = ref(false);
-const showPopupJoin = ref(false);
-const selectedPlayerCount = ref(2);
-const enteredLobbyID = ref("");
+// Reactive state with explicit types
+const showPopupHost = ref<boolean>(false);
+const showPopupJoin = ref<boolean>(false);
+const selectedPlayerCount = ref<number>(2);
+const enteredLobbyID = ref<string>("");
 
-async function confirmedHost() {
+/**
+ * Handles host game confirmation with proper error handling
+ */
+async function confirmedHost(): Promise<void> {
   showPopupHost.value = false;
-  const id = loadPlayerFromCookie()?.id;
+  const player = loadPlayerFromCookie();
+
+  if (!player?.id) {
+    throw createError({
+      statusCode: 400,
+      message: "Player not found in session",
+    });
+  }
+
   try {
+    const requestBody: CreateRoomRequest = {
+      id: player.id,
+      maxPlayers: selectedPlayerCount.value,
+    };
+
     const responseRoom: Room = await $fetch<Room>("/api/rooms", {
       method: "POST",
-      body: {
-        id: id,
-      },
+      body: requestBody,
     });
 
-    // Verwende Cookie-Helper anstatt sessionStorage
+    // Use cookie helper instead of sessionStorage
     saveGameStateToCookies(responseRoom, true);
 
-    const room = useState("rooms", () => responseRoom);
-    const isHost = useState("isHost", () => true);
-    const roomID = responseRoom.id;
+    useState<Room>("rooms", () => responseRoom);
+    useState<boolean>("isHost", () => true);
+    const roomID: string = responseRoom.id;
 
-    navigateTo(`/lobby-${roomID}`);
+    await navigateTo(`/lobby-${roomID}`);
   } catch (error) {
     console.error("Error communicating with internal API:", error);
     throw createError({
@@ -36,30 +51,43 @@ async function confirmedHost() {
   }
 }
 
-async function confirmedJoin() {
+/**
+ * Handles join game confirmation with proper error handling
+ */
+async function confirmedJoin(): Promise<void> {
   showPopupJoin.value = false;
-  const id = loadPlayerFromCookie()?.id;
+  const player = loadPlayerFromCookie();
+
+  if (!player?.id) {
+    throw createError({
+      statusCode: 400,
+      message: "Player not found in session",
+    });
+  }
+
   console.log(enteredLobbyID.value);
+
   try {
+    const requestBody: JoinRoomRequest = {
+      id: player.id,
+    };
+
     const responseRoom: Room = await $fetch<Room>(
       `api/rooms/${enteredLobbyID.value}/players`,
       {
         method: "POST",
-        body: {
-          id: id,
-        },
+        body: requestBody,
       }
     );
     console.log(responseRoom);
 
-    // Verwende Cookie-Helper anstatt sessionStorage
     saveGameStateToCookies(responseRoom, false);
 
-    const room = useState("rooms", () => responseRoom);
-    const isHost = useState("isHost", () => false);
-    const roomID = responseRoom.id;
+    useState<Room>("rooms", () => responseRoom);
+    useState<boolean>("isHost", () => false);
+    const roomID: string = responseRoom.id;
 
-    navigateTo(`/lobby-${roomID}`);
+    await navigateTo(`/lobby-${roomID}`);
   } catch (error) {
     console.error("Error communicating with internal API:", error);
     throw createError({

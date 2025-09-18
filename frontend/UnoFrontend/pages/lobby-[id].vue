@@ -1,31 +1,32 @@
 <script setup lang="ts">
-import type { Room } from "~/util/models";
+import type { Room, Player } from "~/util/models";
 import {
   loadRoomFromCookie,
   getHostStatusFromCookie,
   saveRoomToCookie,
 } from "~/util/roomCookie";
-import WebSocketHelper from "~/util/webSocketHelper";
-import {loadPlayerFromCookie} from "~/util/playerCookie";
+import WebSocketHelper, { type WebSocketEventHandlers } from "~/util/webSocketHelper";
+import { loadPlayerFromCookie } from "~/util/playerCookie";
 
 definePageMeta({
   middleware: ["check-join"],
 });
 
+// Route and player data with explicit types
 const route = useRoute();
-let id = route.params.id;
-const player = loadPlayerFromCookie();
+const id: string = route.params.id as string;
+const player: Player | null = loadPlayerFromCookie();
 
-const room = useState<Room | null>("room", () => {
+// State management with explicit types
+const room = useState<Room | null>("room", (): Room | null => {
   return loadRoomFromCookie();
 });
 
-// Load isHost from cookie
-const isHost = useState<boolean>("isHost", () => {
+const isHost = useState<boolean>("isHost", (): boolean => {
   return getHostStatusFromCookie();
 });
 
-const players = ref(room?.value?.players);
+const players = ref<Player[]>(room?.value?.players || []);
 
 // WebSocket instance - use ref to maintain single instance
 const wsHelper = ref<WebSocketHelper | null>(null);
@@ -33,7 +34,7 @@ const wsHelper = ref<WebSocketHelper | null>(null);
 // Save rooms to cookie whenever it changes
 watch(
   room,
-  (newRoom) => {
+  (newRoom: Room | null): void => {
     if (newRoom) {
       saveRoomToCookie(newRoom);
       players.value = newRoom.players || [];
@@ -42,51 +43,66 @@ watch(
   { deep: true }
 );
 
-onMounted(async () => {
+/**
+ * Initializes component and establishes WebSocket connection
+ */
+onMounted(async (): Promise<void> => {
   if (!room.value) {
-    const data = await $fetch<Room>(`/api/rooms/${id}`);
+    const data: Room = await $fetch<Room>(`/api/rooms/${id}`);
     if (data) {
       room.value = data;
     }
   }
   players.value = room.value?.players || [];
 
-  // Only create WebSocket connection if it doesn't exist
-  if (!wsHelper.value) {
-    wsHelper.value = new WebSocketHelper(player!.id, id as string);
+  // Only create WebSocket connection if it doesn't exist and player is available
+  if (!wsHelper.value && player) {
+    wsHelper.value = new WebSocketHelper(player.id, id);
 
-    // Set callback to update room when someone joins
-    wsHelper.value.setRoomUpdateCallback((updatedRoom: Room) => {
-      console.log('Room updated:', updatedRoom);
-      room.value = updatedRoom;
-      players.value = updatedRoom.players;
-    });
+    // Set up event handlers
+    const eventHandlers: WebSocketEventHandlers = {
+      onPlayerJoined: (newPlayer: Player): void => {
+        console.log('new Player:', newPlayer);
+        players.value.push(newPlayer);
+      },
+      onError: (error: Error): void => {
+        console.error('WebSocket error:', error);
+        // Handle WebSocket errors appropriately
+      }
+    };
 
-
-    wsHelper.value.playerJoined(player!);
-
+    wsHelper.value.setEventHandlers(eventHandlers);
+    wsHelper.value.playerJoined(player);
   }
 });
 
-// Clean up WebSocket connection when component is unmounted
-onBeforeUnmount(() => {
+/**
+ * Cleans up WebSocket connection when component is unmounted
+ */
+onBeforeUnmount((): void => {
   if (wsHelper.value) {
     wsHelper.value.disconnect();
     wsHelper.value = null;
   }
 });
 
-async function leaveRoom() {
+/**
+ * Handles leaving the room
+ */
+async function leaveRoom(): Promise<void> {
   // Disconnect WebSocket before leaving
   if (wsHelper.value) {
     wsHelper.value.disconnect();
     wsHelper.value = null;
   }
-  navigateTo(`/hostOrJoin`);
+  await navigateTo(`/hostOrJoin`);
 }
 
-async function startRoom() {
-  navigateTo(`/game/${id}`);
+/**
+ * Handles starting the game (host only)
+ */
+async function startRoom(): Promise<void> {
+  await navigateTo(`/game/${id}`);
 }
 </script>
 
