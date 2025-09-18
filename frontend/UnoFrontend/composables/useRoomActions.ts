@@ -1,24 +1,15 @@
 import type { Room, CreateRoomRequest, JoinRoomRequest } from "~/util/models";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 import { saveGameStateToCookies } from "~/util/roomCookie";
+import { handleApiError, validatePlayerSession, validateRoomId } from "~/util/errorUtils";
 
 export const useRoomActions = () => {
-  const isLoading = ref<boolean>(false);
-
   /**
    * Creates a new room with the specified player count
    */
   const createRoom = async (maxPlayers: number): Promise<Room> => {
     const player = loadPlayerFromCookie();
-
-    if (!player?.id) {
-      throw createError({
-        statusCode: 400,
-        message: "Player not found in session",
-      });
-    }
-
-    isLoading.value = true;
+    validatePlayerSession(player);
 
     try {
       const requestBody: CreateRoomRequest = {
@@ -33,13 +24,7 @@ export const useRoomActions = () => {
 
       return room;
     } catch (error) {
-      console.error("Error creating room:", error);
-      throw createError({
-        statusCode: 500,
-        message: "Failed to create room",
-      });
-    } finally {
-      isLoading.value = false;
+      handleApiError(error);
     }
   };
 
@@ -47,36 +32,24 @@ export const useRoomActions = () => {
    * Joins an existing room by ID
    */
   const joinRoom = async (roomId: string): Promise<Room> => {
+    validateRoomId(roomId);
+
     const player = loadPlayerFromCookie();
-
-    if (!player?.id) {
-      throw createError({
-        statusCode: 400,
-        message: "Player not found in session",
-      });
-    }
-
-    isLoading.value = true;
+    validatePlayerSession(player);
 
     try {
       const requestBody: JoinRoomRequest = {
         id: player.id,
       };
 
-      const room: Room = await $fetch<Room>(`api/rooms/${roomId}/players`, {
+      const room: Room = await $fetch<Room>(`api/rooms/${roomId.trim()}/players`, {
         method: "POST",
         body: requestBody,
       });
 
       return room;
     } catch (error) {
-      console.error("Error joining room:", error);
-      throw createError({
-        statusCode: 500,
-        message: "Failed to join room",
-      });
-    } finally {
-      isLoading.value = false;
+      handleApiError(error);
     }
   };
 
@@ -93,7 +66,6 @@ export const useRoomActions = () => {
   };
 
   return {
-    isLoading: readonly(isLoading),
     createRoom,
     joinRoom,
     enterLobby,
