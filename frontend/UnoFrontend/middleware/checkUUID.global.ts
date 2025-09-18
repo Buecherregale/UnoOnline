@@ -1,5 +1,5 @@
 import type { Player } from "~/util/models";
-import {loadPlayerFromCookie} from "~/util/playerCookie";
+import { loadPlayerFromCookie } from "~/util/playerCookie";
 
 /**
  * Global authentication middleware

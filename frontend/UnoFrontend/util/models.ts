@@ -54,24 +54,24 @@ export interface JoinGameModalProps extends ModalProps {
 
 // Event Types
 export interface PlayerJoinedEvent {
-  type: 'player-joined';
+  type: "player-joined";
   player: Player;
   room: Room;
 }
 
 export interface PlayerLeftEvent {
-  type: 'player-left';
+  type: "player-left";
   playerId: string;
   room: Room;
 }
 
 export interface GameStartedEvent {
-  type: 'game-started';
+  type: "game-started";
   roomId: string;
 }
 
 export interface RoomUpdatedEvent {
-  type: 'room-updated';
+  type: "room-updated";
   room: Room;
 }
 
@@ -96,7 +96,7 @@ export interface JoinRoomRequest {
 }
 
 export interface LeaveRoomRequest {
-    id: string;
+  id: string;
 }
 
 // Navigation Types
@@ -107,7 +107,7 @@ export interface NavigationState {
 }
 
 // Utility Types
-export type PlayerPosition = 'top' | 'bottom' | 'left' | 'right';
+export type PlayerPosition = "top" | "bottom" | "left" | "right";
 
 export interface PlayerWithPosition {
   player: Player;
@@ -115,6 +115,6 @@ export interface PlayerWithPosition {
 }
 
 export type message = {
-    type: string  // the name of the payload type (the tags below + `Payload`)
-    payload: any  // the struct instance from below
-}
+  type: string; // the name of the payload type (the tags below + `Payload`)
+  payload: any; // the struct instance from below
+};

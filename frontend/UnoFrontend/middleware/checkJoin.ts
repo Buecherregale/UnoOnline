@@ -1,5 +1,5 @@
-import type {Player, Room} from "~/util/models";
-import {loadPlayerFromCookie} from "~/util/playerCookie";
+import type { Player, Room } from "~/util/models";
+import { loadPlayerFromCookie } from "~/util/playerCookie";
 
 /**
  * Middleware for lobby routes with automatic rooms joining

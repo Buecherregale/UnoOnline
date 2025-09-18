@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import type {Room, Player } from "~/util/models";
+import type { Room, Player } from "~/util/models";
 import {
   loadRoomFromCookie,
   getHostStatusFromCookie,
   saveRoomToCookie,
 } from "~/util/roomCookie";
-import WebSocketHelper, { type WebSocketEventHandlers } from "~/util/webSocketHelper";
+import WebSocketHelper, {
+  type WebSocketEventHandlers,
+} from "~/util/webSocketHelper";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 
 definePageMeta({
@@ -62,13 +64,13 @@ onMounted(async (): Promise<void> => {
     // Set up event handlers
     const eventHandlers: WebSocketEventHandlers = {
       onPlayerJoined: (newPlayer: Player): void => {
-        console.log('new Player:', newPlayer);
+        console.log("new Player:", newPlayer);
         players.value.push(newPlayer);
       },
       onError: (error: Error): void => {
-        console.error('WebSocket error:', error);
+        console.error("WebSocket error:", error);
         // Handle WebSocket errors appropriately
-      }
+      },
     };
 
     wsHelper.value.setEventHandlers(eventHandlers);
