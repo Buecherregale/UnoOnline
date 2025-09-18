@@ -1,7 +1,11 @@
 import type { Room, CreateRoomRequest, JoinRoomRequest } from "~/util/models";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 import { saveGameStateToCookies } from "~/util/roomCookie";
-import { handleApiError, validatePlayerSession, validateRoomId } from "~/util/errorUtils";
+import {
+  handleApiError,
+  validatePlayerSession,
+  validateRoomId,
+} from "~/util/errorUtils";
 
 export const useRoomActions = () => {
   /**
@@ -42,10 +46,13 @@ export const useRoomActions = () => {
         id: player.id,
       };
 
-      const room: Room = await $fetch<Room>(`api/rooms/${roomId.trim()}/players`, {
-        method: "POST",
-        body: requestBody,
-      });
+      const room: Room = await $fetch<Room>(
+        `api/rooms/${roomId.trim()}/players`,
+        {
+          method: "POST",
+          body: requestBody,
+        }
+      );
 
       return room;
     } catch (error) {

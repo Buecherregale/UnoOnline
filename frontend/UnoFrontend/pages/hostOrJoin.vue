@@ -16,7 +16,7 @@ const { createRoom, joinRoom, enterLobby } = useRoomActions();
  */
 async function confirmedHost(): Promise<void> {
   isLoading.value = true;
-  await new Promise(r => setTimeout(r, 2000));
+  await new Promise((r) => setTimeout(r, 2000));
   errorMessage.value = "";
 
   try {
@@ -25,7 +25,9 @@ async function confirmedHost(): Promise<void> {
     showPopupHost.value = false;
   } catch (error) {
     errorMessage.value =
-      error instanceof Error ? error.message : "Ein unerwarteter Fehler ist aufgetreten";
+      error instanceof Error
+        ? error.message
+        : "Ein unerwarteter Fehler ist aufgetreten";
   } finally {
     isLoading.value = false;
   }
@@ -44,7 +46,9 @@ async function confirmedJoin(): Promise<void> {
     showPopupJoin.value = false;
   } catch (error) {
     errorMessage.value =
-      error instanceof Error ? error.message : "Ein unerwarteter Fehler ist aufgetreten";
+      error instanceof Error
+        ? error.message
+        : "Ein unerwarteter Fehler ist aufgetreten";
   } finally {
     isLoading.value = false;
   }
@@ -89,7 +93,10 @@ function closeModal(): void {
       @close="closeModal"
       @confirm="confirmedHost"
     >
-      <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+      <div
+        v-if="errorMessage"
+        class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"
+      >
         {{ errorMessage }}
       </div>
 
@@ -110,7 +117,10 @@ function closeModal(): void {
       @close="closeModal"
       @confirm="confirmedJoin"
     >
-      <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+      <div
+        v-if="errorMessage"
+        class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"
+      >
         {{ errorMessage }}
       </div>
 
@@ -128,7 +138,9 @@ function closeModal(): void {
       class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
     >
       <div class="bg-white p-8 rounded-lg shadow-lg flex items-center gap-4">
-        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+        <div
+          class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"
+        ></div>
         <span>Loading...</span>
       </div>
     </div>

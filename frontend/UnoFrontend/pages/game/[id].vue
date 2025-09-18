@@ -98,7 +98,9 @@ function handlePlayCard(card: any, index: number): void {
     <!-- Loading State -->
     <div v-if="isLoading" class="game-board flex items-center justify-center">
       <div class="bg-white p-8 rounded-lg shadow-lg flex items-center gap-4">
-        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+        <div
+          class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"
+        ></div>
         <span>Spiel wird geladen...</span>
       </div>
     </div>
@@ -122,10 +124,7 @@ function handlePlayCard(card: any, index: number): void {
       />
 
       <!-- Current player's hand -->
-      <GamePlayerHand
-        :cards="playerHand"
-        @play-card="handlePlayCard"
-      />
+      <GamePlayerHand :cards="playerHand" @play-card="handlePlayCard" />
     </div>
   </div>
 </template>

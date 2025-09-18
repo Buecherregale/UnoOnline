@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Player, CreatePlayerRequest } from "~/util/models";
 import { savePlayerToCookie } from "~/util/playerCookie";
-import {handleApiError} from "~/util/errorUtils";
+import { handleApiError } from "~/util/errorUtils";
 
 // Reactive state with explicit types
 const name = ref<string>("");
@@ -17,7 +17,7 @@ const playerFetches = async (name: string): Promise<Player> => {
       body: requestBody,
     });
   } catch (error) {
-    handleApiError(error)
+    handleApiError(error);
   }
 };
 
