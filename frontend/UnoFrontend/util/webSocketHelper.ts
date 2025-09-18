@@ -14,9 +14,8 @@ export enum WebSocketState {
  * WebSocket event handlers interface
  */
 export interface WebSocketEventHandlers {
-  onRoomUpdate?: (player: Player) => void;
   onPlayerJoined?: (player: Player) => void;
-  onPlayerLeft?: (playerId: string) => void;
+  onPlayerLeft?: (player: Player, newOwner: Player) => void;
   onGameStarted?: (roomId: string) => void;
   onError?: (error: Error) => void;
   onStateChange?: (state: WebSocketState) => void;
@@ -112,8 +111,8 @@ export default class WebSocketHelper {
           break;
         case "RoomLeftPayload":
           player = msg.payload.player as Player;
-          newOwner = msg.payload.newOwner as Player | null;
-          this.eventHandlers.onPlayerLeft?.(msg.payload);
+          newOwner = msg.payload.owner as Player;
+          this.eventHandlers.onPlayerLeft?.(player, newOwner);
           break;
         case "GameStartedPayload":
           this.eventHandlers.onGameStarted?.(msg.payload);
@@ -226,35 +225,6 @@ export default class WebSocketHelper {
    */
   public setEventHandlers(handlers: WebSocketEventHandlers): void {
     this.eventHandlers = { ...this.eventHandlers, ...handlers };
-  }
-
-  /**
-   * Legacy method for backward compatibility
-   */
-  public setRoomUpdateCallback(callback: (player: Player) => void): void {
-    this.eventHandlers.onRoomUpdate = callback;
-  }
-
-  /**
-   * Sends player joined message
-   */
-  public playerJoined(player: Player): void {
-    const message: message = {
-      type: "RoomJoinPayload",
-      payload: JSON.stringify(player),
-    };
-    this.queueMessage(message);
-  }
-
-  /**
-   * Sends player left message
-   */
-  public playerLeft(playerId: string): void {
-    const message: message = {
-      type: "PlayerLeftPayload",
-      payload: playerId,
-    };
-    this.queueMessage(message);
   }
 
   /**
