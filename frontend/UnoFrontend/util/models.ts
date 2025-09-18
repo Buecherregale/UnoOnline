@@ -100,7 +100,7 @@ export interface LeaveRoomRequest {
 }
 
 export interface StartGameRequest {
-    id: string;
+  id: string;
 }
 
 // Navigation Types

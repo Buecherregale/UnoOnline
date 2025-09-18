@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {Room, Player, StartGameRequest} from "~/util/models";
+import type { Room, Player, StartGameRequest } from "~/util/models";
 import {
   loadRoomFromCookie,
   getHostStatusFromCookie,
@@ -10,7 +10,8 @@ import WebSocketHelper, {
   type WebSocketEventHandlers,
 } from "~/util/webSocketHelper";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
-import {handleApiError, validatePlayerSession} from "~/util/errorUtils";
+import { handleApiError, validatePlayerSession } from "~/util/errorUtils";
+import { useClipboard } from "@vueuse/core";
 
 definePageMeta({
   middleware: ["check-join"],
@@ -20,6 +21,9 @@ definePageMeta({
 const route = useRoute();
 const id: string = route.params.id as string;
 const player: Player | null = loadPlayerFromCookie();
+
+const source = ref<string>(route.params.id as string);
+const { copy, copied, isSupported } = useClipboard({ source });
 
 // State management with explicit types
 const room = useState<Room | null>("room", (): Room | null => {
@@ -121,9 +125,8 @@ async function leaveRoom(): Promise<void> {
  * Handles starting the game (host only)
  */
 async function startRoom(): Promise<void> {
-
   const player = loadPlayerFromCookie();
-  validatePlayerSession(player)
+  validatePlayerSession(player);
 
   try {
     const requestBody: StartGameRequest = {
@@ -131,12 +134,12 @@ async function startRoom(): Promise<void> {
     };
 
     //start the game via api call
-    await $fetch<Room>(`/api/rooms/${id}`,  {
+    await $fetch<Room>(`/api/rooms/${id}`, {
       method: "POST",
       body: requestBody,
-    })
+    });
   } catch (error) {
-    handleApiError(error)
+    handleApiError(error);
   }
 
   await navigateTo(`/game/${id}`);
@@ -145,7 +148,21 @@ async function startRoom(): Promise<void> {
 
 <template>
   <div class="flex flex-col items-center">
-    <p class="text-lg font-bold mb-4">Room ID: {{ id }}</p>
+    <div class="flex items-center justify-between w-full max-w-md mb-4">
+      <p class="text-lg font-bold">Room ID: {{ id }}</p>
+      <div v-if="isSupported">
+        <button
+          @click="copy(source)"
+          class="ml-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          <span v-if="!copied">Copy</span>
+          <span v-else>Copied!</span>
+        </button>
+      </div>
+      <p v-else-if="!isSupported" class="text-sm text-gray-500 ml-4">
+        Browser unterstützt Clipboard API nicht
+      </p>
+    </div>
     <div class="grid grid-cols-2 gap-4">
       <div
         v-for="player in players"
