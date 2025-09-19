@@ -12,7 +12,7 @@ const name = ref<string>("");
 const playerFetches = async (name: string): Promise<Player> => {
   try {
     const requestBody: CreatePlayerRequest = { name };
-    return await $fetch<Player>("/api/playerID", {
+    return await $fetch<Player>("/api/players", {
       method: "POST",
       body: requestBody,
     });
