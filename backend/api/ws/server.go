@@ -2,7 +2,6 @@ package ws
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"slices"
 	"sync"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/Buecherregale/log"
 )
 
 type Message struct {
@@ -78,12 +78,12 @@ func HandleConnectMsg(w http.ResponseWriter, r *http.Request, server *WsServer) 
 func (s *WsServer) CreateRoom(roomId uuid.UUID, receiver MsgReceiver) *WsRoom {
 	s.mutex.Lock()
 	if s.Rooms[roomId] != nil {
-		log.Printf("Room %s already exists\n", roomId)
+		log.Errorf("Room %s already exists\n", roomId)
 		return nil
 	}
 
 	if data.Rooms[roomId] == nil {
-		log.Printf("Room %s does not exist yet. Firstly create via rest\n", roomId)
+		log.Errorf("Room %s does not exist yet. Firstly create via rest\n", roomId)
 		return nil
 	}
 
@@ -104,7 +104,7 @@ func (s *WsServer) CreateRoom(roomId uuid.UUID, receiver MsgReceiver) *WsRoom {
 func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, roomId, playerId uuid.UUID) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("Upgrade error:", err)
+		log.Errorf("Upgrade error: %v\n", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -112,7 +112,7 @@ func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, room
 	s.mutex.Lock()
 	room, exists := s.Rooms[roomId]
 	if !exists {
-		log.Printf("Room %s does not exist\n", roomId)
+		log.Errorf("Room %s does not exist\n", roomId)
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
@@ -120,7 +120,7 @@ func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, room
 
 	ro := data.Rooms[roomId]
 	if !slices.ContainsFunc(ro.Players, func(p dtos.Player) bool { return p.Id == playerId }) {
-		log.Printf("Player not in room\n")
+		log.Errorf("Player not in room\n")
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
@@ -146,7 +146,7 @@ func (player *WsPlayer) readMessages(room *WsRoom) {
 		var msg Message
 		err := player.conn.ReadJSON(&msg)
 		if err != nil {
-			log.Println("Read error:", err)
+			log.Errorf("Read error: %v\n", err)
 			break
 		}
 
@@ -165,7 +165,7 @@ func (player *WsPlayer) readMessages(room *WsRoom) {
 		}
 
 		// Otherwise, process the message normally
-		log.Printf("Received message: %+v\n", msg)
+		log.Errorf("Received message: %+v\n", msg)
 		if room.handler != nil {
 			room.handler(room.id, player.id, msg)
 		}
@@ -177,7 +177,7 @@ func (player *WsPlayer) writeMessages() {
 	for msg := range player.sendChan {
 		err := player.conn.WriteJSON(msg)
 		if err != nil {
-			log.Println("Write error:", err)
+			log.Errorf("Write error: %v\n", err)
 			break
 		}
 	}

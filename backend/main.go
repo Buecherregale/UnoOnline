@@ -1,19 +1,28 @@
 package main
 
 import (
-	"log"
 	"net/http"
-	"os"
+	"time"
 
 	"uno_online/api/controller"
 	"uno_online/api/data"
 	"uno_online/api/dtos"
 	"uno_online/api/ws"
 
+	"github.com/Buecherregale/log"
 	"github.com/google/uuid"
 )
 
 func main() {
+	config := log.LogConfig {
+		Level: log.INFO,
+		Timeformat: time.RFC3339,
+		SerializationStrategy: log.SIMPLE,
+		TargetMode: log.STDOUT,
+		Logfile: "",
+	}
+	log.Init(config)
+
 	FillTestData()
 
 	mux := Router()
@@ -24,9 +33,8 @@ func main() {
 		ws.HandleConnectMsg(w, r, ws.Server)
 	})
 
-	log.SetOutput(os.Stdout)
-	log.Println("Starting server...")
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	log.Infoln("Starting server...")
+	log.Fatalf("%v\n", http.ListenAndServe(":8080", mux))
 }
 
 func FillTestData() {
@@ -51,7 +59,7 @@ func FillWsTestData(server *ws.WsServer) {
 	wsRoom, _ := server.Rooms[room1iD]
 
 	receiver := func(roomId, playerId uuid.UUID, msg ws.Message) {
-		log.Printf("Message send to room %s\nby player %s:\n%s", roomId, playerId, msg.Type)
+		log.Debugf("Message send to room %s\nby player %s:\n%s", roomId, playerId, msg.Type)
 		wsRoom.BroadcastMessage(msg.Type, msg.Payload)
 		wsRoom.Players[playerId].SendMessage(msg.Type, msg.Payload)
 	}
