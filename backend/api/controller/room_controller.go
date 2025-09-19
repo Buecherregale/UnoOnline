@@ -13,6 +13,7 @@ import (
 	"uno_online/uno"
 	"uno_online/util"
 
+	"github.com/Buecherregale/log"
 	"github.com/google/uuid"
 )
 
@@ -30,6 +31,8 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("Creating new room with creator/owner: %s\n", pId.Id.String())
+
 	owner := data.Players[pId.Id]
 	if owner == nil {
 		http.Error(w, "not found", http.StatusNotFound)
@@ -41,6 +44,8 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 
 	data.Rooms[rId] = &room
 	ws.Server.CreateRoom(rId, nil)
+
+	log.Debugf("Created new room '%s' with owner: %v\n", rId.String(), pId.Id.String())
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(room)
@@ -83,6 +88,7 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	room.Players = append(room.Players, *joining)
+	log.Debugf("Player '%s' joined the restapi room '%s', now containing %d players\n", joining.Id.String(), room.Id.String(), len(room.Players))
 	wsRoom := ws.Server.Rooms[room.Id]
 	wsRoom.BroadcastMessage("RoomJoinPayload", ws.RoomJoinPayload{
 		Player: *joining,
@@ -147,7 +153,9 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	room.Players = append(room.Players[:leaveIndex], room.Players[leaveIndex+1:]...)
-	
+
+	log.Debugf("Player '%s' left room '%s'. Room owner is: %s\n", leaving.Id.String(), room.Id.String(), room.Owner.Id.String())
+
 	wsRoom := ws.Server.Rooms[room.Id]
 	wsRoom.BroadcastMessage("RoomLeftPayload", ws.RoomLeftPayload {
 		Player: *leaving,
@@ -192,6 +200,8 @@ func Start(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Amount of players not maching. Connect all via Websocket", http.StatusConflict)
 		return
 	}
+
+	log.Debugf("Starting room: %s\n", room.Id.String())
 
 	ws.Server.Rooms[room.Id].BroadcastMessage("RoomStartPayload", ws.RoomStartPayload {
 		Players: room.Players,

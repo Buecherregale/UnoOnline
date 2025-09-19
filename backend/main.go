@@ -15,7 +15,7 @@ import (
 
 func main() {
 	config := log.LogConfig {
-		Level: log.INFO,
+		Level: log.DEBUG,
 		Timeformat: time.RFC3339,
 		SerializationStrategy: log.SIMPLE,
 		TargetMode: log.STDOUT,
@@ -33,7 +33,7 @@ func main() {
 		ws.HandleConnectMsg(w, r, ws.Server)
 	})
 
-	log.Infoln("Starting server...")
+	log.Infoln("Starting server on port 8080...")
 	log.Fatalf("%v\n", http.ListenAndServe(":8080", mux))
 }
 

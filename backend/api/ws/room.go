@@ -18,6 +18,7 @@ func (room *WsRoom) BroadcastMessage(msgType string, payload any) {
 		Type:    msgType,
 		Payload: json.RawMessage(payloadBytes),
 	}
+	log.Debugf("Broadcasting message of type '%s' to room '%s'\n", msgType, room.id)
 
 	room.mutex.Lock()
 	defer room.mutex.Unlock()
@@ -33,6 +34,7 @@ func (room *WsRoom) BroadcastMessage(msgType string, payload any) {
 
 func (room *WsRoom) RemovePlayer(playerId uuid.UUID) {
 	room.mutex.Lock()
+	log.Debugf("Removing player '%s' from room\n", playerId.String())
 	player, exists := room.Players[playerId]
 	if !exists {
 		log.Errorf("requested player %s does not exist in room %s\n", playerId, room.id)
@@ -46,6 +48,7 @@ func (room *WsRoom) RemovePlayer(playerId uuid.UUID) {
 
 func (room *WsRoom) AddPlayer(player *WsPlayer) {
 	room.mutex.Lock()
+	log.Debugf("Added player '%s' to WsRoom\n", player.id.String())
 	room.Players[player.id] = player
 	room.mutex.Unlock()
 }

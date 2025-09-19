@@ -19,7 +19,7 @@ func (player *WsPlayer) SendMessage(msgType string, payload any) {
 		Type:    msgType,
 		Payload: json.RawMessage(bytes),
 	}
-
+	log.Debugf("Player %s wants to send message of type: %s\n", player.id, msgType)
 	select {
 	case player.sendChan <- msg:
 		return
@@ -30,6 +30,7 @@ func (player *WsPlayer) SendMessage(msgType string, payload any) {
 
 func (player *WsPlayer) AskAndWaitReply(msgType string, payload any, timeout time.Duration) (*Message, bool, error) {
 	messageId := uuid.New()
+	log.Debugf("Asking player '%s' for reply to message '%s' of type: '%s'\n", player.id, messageId, msgType)
 
 	responseChan := make(chan Message, 1)
 	player.mutex.Lock()
@@ -69,5 +70,6 @@ func (player *WsPlayer) SendError(code int, msg string) {
 		Code:    code,
 		Message: msg,
 	}
+	log.Debugf("Sending error to player '%s': %+v\n", player.id, err)
 	player.SendMessage("ErrorMessage", err)
 }

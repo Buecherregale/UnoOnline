@@ -93,6 +93,7 @@ func (s *WsServer) CreateRoom(roomId uuid.UUID, receiver MsgReceiver) *WsRoom {
 		broadcast: make(chan Message),
 		handler:   receiver,
 	}
+	log.Debugf("Created new WsRoom: %s\n", roomId)
 
 	s.Rooms[roomId] = room
 	go room.Run()
@@ -130,8 +131,8 @@ func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, room
 		conn:     conn,
 		sendChan: make(chan Message),
 	}
-
 	room.AddPlayer(player)
+	
 	go player.readMessages(room)
 	go player.writeMessages()
 }
@@ -165,7 +166,7 @@ func (player *WsPlayer) readMessages(room *WsRoom) {
 		}
 
 		// Otherwise, process the message normally
-		log.Errorf("Received message: %+v\n", msg)
+		log.Debugf("Received message: %+v\n", msg)
 		if room.handler != nil {
 			room.handler(room.id, player.id, msg)
 		}
