@@ -16,20 +16,20 @@ type GameStartPayload struct {
 }
 
 type CardPlayedPayload struct {
-	Player    dtos.Player   `json:"player,omitempty"`
+	Player    dtos.Player   `json:"player"`
 	Card     	any 					`json:"card,omitempty"`
 }
 
 type PlayerTurnPayload struct {
-	Player    dtos.Player   `json:"player,omitempty"`
+	Player    dtos.Player   `json:"player"`
 }
 
 type PlayerWinPayload struct {
-	Player    dtos.Player   `json:"player,omitempty"`
+	Player    dtos.Player   `json:"player"`
 }
 
 type PlayerDrawsCardsPayload struct {
-	Player    dtos.Player   `json:"player,omitempty"`
+	Player    dtos.Player   `json:"player"`
 	Amount   	int       		`json:"amount,omitempty"`
 }
 
@@ -40,12 +40,12 @@ type DirectionChangedPayload struct {
 }
 
 type RoomJoinPayload struct {
-	Player 	 	dtos.Player		`json:"player,omitempty"`
+	Player 	 	dtos.Player		`json:"player"`
 }
 
 type RoomLeftPayload struct {
-	Player 		dtos.Player		`json:"player,omitempty"`
-	Owner			dtos.Player		`json:"owner,omitempty"`
+	Player 		dtos.Player		`json:"player"`
+	Owner			dtos.Player		`json:"owner"`
 }
 
 type RoomStartPayload struct { 
@@ -54,7 +54,7 @@ type RoomStartPayload struct {
 }
 
 type PlayerChoseColorPayload struct {
-	Player    dtos.Player   `json:"player,omitempty"`
+	Player    dtos.Player   `json:"player"`
 	Color    	int       		`json:"color,omitempty"`
 }
 
