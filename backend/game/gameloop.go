@@ -3,6 +3,8 @@ package game
 import (
 	"uno_online/api/dtos"
 	"uno_online/api/ws"
+
+	"github.com/Buecherregale/log"
 )
 
 func StartRoom(room *dtos.Room, cards []Card, listeners []CardPlayEventListener) GameState {
@@ -23,6 +25,14 @@ func StartRoom(room *dtos.Room, cards []Card, listeners []CardPlayEventListener)
 		CurrI:     0,
 		CurrDir:   1,
 		listeners: listeners,
+	}
+	// add WsPlayer reference to GamePlayers
+	for _, p := range state.Players {
+		wsp, exists := state.WsRoom.Players[p.P.Id]
+		if !exists {
+			log.Fatalf("Missing WsPlayer for player: %s. Did he join the WsRoom correctly?\n", p.P.Id.String())
+		}
+		p.WsP = wsp
 	}
 
 	state.deal(state.Players, 7)
