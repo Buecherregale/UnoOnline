@@ -31,6 +31,38 @@ func TestPlayerSendMessage(t *testing.T) {
 	}
 }
 
+func TestPlayerSendMultipleMessages(t *testing.T) {
+	mockConn := ws.MockWsConn()
+	mocked := ws.MockWsPlayer(mockConn, nil)
+
+	expectedType := "RoomJoinPayload"
+	expectedPayload := ws.RoomJoinPayload {
+		Player: dtos.Player{Id: uuid.New(), Name: "name"},
+	}
+
+	mocked.SendMessage(expectedType, expectedPayload)
+
+	time.Sleep(10 * time.Millisecond) // let go routine run
+
+	if len(mockConn.Written) != 1 {
+		t.Fatalf("expected 1 message, got %d", len(mockConn.Written))
+	}
+	if mockConn.Written[0].Type != expectedType {
+		t.Fatalf("expected type %q, got %q", expectedType, mockConn.Written[0].Type)
+	}
+
+	mocked.SendMessage(expectedType, expectedPayload)
+
+	time.Sleep(10 * time.Millisecond) // let go routine run
+
+	if len(mockConn.Written) != 2 {
+		t.Fatalf("expected 2 message, got %d", len(mockConn.Written))
+	}
+	if mockConn.Written[1].Type != expectedType {
+		t.Fatalf("expected type %q, got %q", expectedType, mockConn.Written[1].Type)
+	}
+}
+
 func TestPlayerSendError(t *testing.T) {
 	conn := ws.MockWsConn()
 	player := ws.MockWsPlayer(conn, nil)
