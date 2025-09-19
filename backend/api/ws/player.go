@@ -3,16 +3,16 @@ package ws
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/Buecherregale/log"
 	"github.com/google/uuid"
 )
 
 func (player *WsPlayer) SendMessage(msgType string, payload any) {
 	bytes, err := json.Marshal(payload)
 	if err != nil {
-		log.Printf("could not marshal message %s\n", payload)
+		log.Errorf("could not marshal message %s\n", payload)
 		return
 	}
 	msg := Message{
@@ -24,7 +24,7 @@ func (player *WsPlayer) SendMessage(msgType string, payload any) {
 	case player.sendChan <- msg:
 		return
 	default:
-		log.Printf("failed to send message to player %s: send channel is full or closed\n", player.id)
+		log.Errorf("failed to send message to player %s: send channel is full or closed\n", player.id)
 	}
 }
 

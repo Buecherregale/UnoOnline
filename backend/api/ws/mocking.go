@@ -2,8 +2,8 @@ package ws
 
 import (
 	"io"
-	"log"
 
+	"github.com/Buecherregale/log"
 	"github.com/google/uuid"
 )
 
@@ -35,7 +35,7 @@ func (conn *MockedConn) ReadJSON(v any) error {
 }
 
 func (conn *MockedConn) Close() error {
-	log.Printf("closing mocked connection...\n")
+	log.Debugf("closing mocked connection...\n")
 	conn.Closed = true 
 	close(conn.Read)
 	return nil 
