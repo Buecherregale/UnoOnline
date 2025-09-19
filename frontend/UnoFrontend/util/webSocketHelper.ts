@@ -16,7 +16,7 @@ export enum WebSocketState {
 export interface WebSocketEventHandlers {
   onPlayerJoined?: (player: Player) => void;
   onPlayerLeft?: (player: Player, newOwner: Player) => void;
-  onGameStarted?: (roomId: string) => void;
+  onRoomStarted?: (roomId: string) => void;
   onError?: (error: Error) => void;
   onStateChange?: (state: WebSocketState) => void;
 }
@@ -32,6 +32,14 @@ export interface WebSocketConfig {
   reconnectDelay?: number;
 }
 
+/**
+ * WebSocket Helper - Handles low-level WebSocket operations
+ * Responsibilities:
+ * - WebSocket connection management
+ * - Message queuing and sending
+ * - Automatic reconnection logic
+ * - Protocol-level error handling
+ */
 export default class WebSocketHelper {
   private socket: WebSocket | null = null;
   private messageQueue: message[] = [];
@@ -114,8 +122,8 @@ export default class WebSocketHelper {
           newOwner = msg.payload.owner as Player;
           this.eventHandlers.onPlayerLeft?.(player, newOwner);
           break;
-        case "GameStartedPayload":
-          this.eventHandlers.onGameStarted?.(msg.payload);
+        case "RoomStartPayload":
+          this.eventHandlers.onRoomStarted?.(msg.payload);
           break;
         default:
           console.warn("Unknown message type:", msg.type);
@@ -260,3 +268,4 @@ export default class WebSocketHelper {
     this.connect();
   }
 }
+

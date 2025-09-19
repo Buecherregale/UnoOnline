@@ -6,12 +6,11 @@ import {
   saveRoomToCookie,
   saveHostStatusToCookie,
 } from "~/util/roomCookie";
-import WebSocketHelper, {
-  type WebSocketEventHandlers,
-} from "~/util/webSocketHelper";
+import type { WebSocketEventHandlers } from "~/util/webSocketHelper";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 import { handleApiError, validatePlayerSession } from "~/util/errorUtils";
 import { useClipboard } from "@vueuse/core";
+import { useWebSocket } from "~/composables/useWebSocket";
 
 definePageMeta({
   middleware: ["check-join"],
@@ -36,8 +35,8 @@ const isHost = useState<boolean>("isHost", (): boolean => {
 
 const players = ref<Player[]>(room?.value?.players || []);
 
-// WebSocket instance - use ref to maintain single instance
-const wsHelper = ref<WebSocketHelper | null>(null);
+// Use the global WebSocket service
+const { connect, addEventHandlers, removeEventHandlers, forceDisconnect } = useWebSocket();
 
 // Save rooms to cookie whenever it changes
 watch(
@@ -63,12 +62,12 @@ onMounted(async (): Promise<void> => {
   }
   players.value = room.value?.players || [];
 
-  // Only create WebSocket connection if it doesn't exist and player is available
-  if (!wsHelper.value && player) {
-    wsHelper.value = new WebSocketHelper(player.id, id);
+  // Connect to WebSocket using global service
+  if (player) {
+    connect(player.id, id);
 
-    // Set up event handlers
-    const eventHandlers: WebSocketEventHandlers = {
+    // Set up event handlers specific to lobby
+    const lobbyEventHandlers: WebSocketEventHandlers = {
       onPlayerJoined: (newPlayer: Player): void => {
         console.log("new Player:", newPlayer);
         players.value.push(newPlayer);
@@ -89,35 +88,36 @@ onMounted(async (): Promise<void> => {
           saveHostStatusToCookie(true);
         }
       },
+      onRoomStarted: (): void => {
+        console.log("Game started");
+        // Navigate to game page
+        navigateTo(`/game/${id}`);
+      },
       onError: (error: Error): void => {
         console.error("WebSocket error:", error);
         // Handle WebSocket errors appropriately
       },
     };
 
-    wsHelper.value.setEventHandlers(eventHandlers);
+    addEventHandlers(lobbyEventHandlers);
   }
 });
 
 /**
- * Cleans up WebSocket connection when component is unmounted
+ * Clean up lobby-specific event handlers when component is unmounted
+ * Note: We don't disconnect the WebSocket to maintain connection across page transitions
  */
 onBeforeUnmount((): void => {
-  if (wsHelper.value) {
-    wsHelper.value.disconnect();
-    wsHelper.value = null;
-  }
+  // Remove only lobby-specific event handlers
+  removeEventHandlers(['onPlayerJoined', 'onPlayerLeft', 'onRoomStarted', 'onError']);
 });
 
 /**
  * Handles leaving the room
  */
 async function leaveRoom(): Promise<void> {
-  // Disconnect WebSocket before leaving
-  if (wsHelper.value) {
-    wsHelper.value.disconnect();
-    wsHelper.value = null;
-  }
+  // Force disconnect WebSocket when actually leaving the room
+  forceDisconnect();
   await navigateTo(`/hostOrJoin`);
 }
 
@@ -141,8 +141,6 @@ async function startRoom(): Promise<void> {
   } catch (error) {
     handleApiError(error);
   }
-
-  await navigateTo(`/game/${id}`);
 }
 </script>
 
