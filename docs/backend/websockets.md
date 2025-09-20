@@ -3,8 +3,10 @@ Communication of game events after a room has been started is transported via we
 The messages are build like this:
 ```go
 struct message {
-  Type    string  // the name of the payload type (the tags below + `Payload`)
-  Payload any     // the struct instance from below
+  Type          string      // the name of the payload type (the tags below + `Payload`)
+  Payload       any         // the struct instance from below
+  MessageId     uuid.UUID   // unique id to trace messages. Important for answers to messages
+  ExpectsAnswer bool        // if true the server expects the client to reply with the apropriate message with the SAME MessageId
 }
 ```
 The backend has 2 distinct communication channels:

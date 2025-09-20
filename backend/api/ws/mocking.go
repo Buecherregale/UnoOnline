@@ -45,9 +45,11 @@ func MockWsPlayer(conn WsConn, room *WsRoom) *WsPlayer {
 	player := WsPlayer{
 		id: uuid.New(),
 		conn: conn,
-		sendChan: make(chan Message, 1),
+		singleChan: make(chan Message, 1),
+		broadcastChan: make(chan Message),
 	}
-	go player.writeMessages()
+	go player.autoSendSingleMessages()
+	go player.autoSendBroadcastMessages()
 	if room != nil {
 		room.AddPlayer(&player)
 		go player.readMessages(room)
@@ -59,10 +61,12 @@ func MockWsPlayerResponseChan(conn WsConn, room *WsRoom, responseChan *map[uuid.
 	player := WsPlayer {
 		id: uuid.New(),
 		conn: conn, 
-		sendChan: make(chan Message, 1),
-		responseChan: *responseChan,
+		singleChan: make(chan Message, 1),
+		broadcastChan: make(chan Message),
+		responseChans: *responseChan,
 	}
-	go player.writeMessages()
+	go player.autoSendSingleMessages()
+	go player.autoSendBroadcastMessages()
 	if room != nil {
 		room.Players[player.id] = &player
 		go player.readMessages(room)

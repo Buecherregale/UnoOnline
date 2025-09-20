@@ -31,8 +31,6 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debugf("Creating new room with creator/owner: %s\n", pId.Id.String())
-
 	owner := data.Players[pId.Id]
 	if owner == nil {
 		http.Error(w, "not found", http.StatusNotFound)

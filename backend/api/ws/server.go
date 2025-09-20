@@ -1,10 +1,8 @@
 package ws
 
 import (
-	"encoding/json"
 	"net/http"
 	"slices"
-	"sync"
 
 	"uno_online/api/data"
 	"uno_online/api/dtos"
@@ -13,47 +11,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/Buecherregale/log"
 )
-
-type Message struct {
-	Type      string          `json:"type"`
-	Payload   json.RawMessage `json:"payload"`
-	MessageId *uuid.UUID      `json:"message_id,omitempty"`
-}
-
-type MsgReceiver func(roomId, playerId uuid.UUID, msg Message)
-
-type WsConn interface {
-	ReadJSON(v any) error
-	WriteJSON(v any) error
-	Close() error
-}
-
-type WsPlayer struct {
-	id           uuid.UUID
-	conn         WsConn
-	sendChan     chan Message
-	responseChan map[uuid.UUID]chan Message
-	mutex        sync.Mutex
-}
-
-type WsRoom struct {
-	id        uuid.UUID
-	broadcast chan Message
-	Players   map[uuid.UUID]*WsPlayer
-	handler   MsgReceiver
-	mutex     sync.Mutex
-}
-
-type WsServer struct {
-	Rooms map[uuid.UUID]*WsRoom
-	mutex sync.Mutex
-}
-
-func NewServer() *WsServer {
-	return &WsServer{
-		Rooms: make(map[uuid.UUID]*WsRoom),
-	}
-}
 
 var Server = NewServer()
 
@@ -90,13 +47,11 @@ func (s *WsServer) CreateRoom(roomId uuid.UUID, receiver MsgReceiver) *WsRoom {
 	room := &WsRoom{
 		id:        roomId,
 		Players:   make(map[uuid.UUID]*WsPlayer),
-		broadcast: make(chan Message),
 		handler:   receiver,
 	}
 	log.Debugf("Created new WsRoom: %s\n", roomId)
 
 	s.Rooms[roomId] = room
-	go room.Run()
 	s.mutex.Unlock()
 
 	return room
@@ -127,66 +82,16 @@ func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, room
 	}
 
 	player := &WsPlayer{
-		id:       playerId,
-		conn:     conn,
-		sendChan: make(chan Message),
+		id:       			playerId,
+		conn:     			conn,
+		singleChan: 		make(chan Message, PLAYER_SINGLE_CHANNEL_BUFFER_SIZE),
+		broadcastChan: 	make(chan Message, PLAYER_BROADCAST_CHANNEL_BUFFER_SIZE),
+		responseChans: 	make(map[uuid.UUID]chan Message),
 	}
 	room.AddPlayer(player)
 	
 	go player.readMessages(room)
-	go player.writeMessages()
-}
-
-func (player *WsPlayer) readMessages(room *WsRoom) {
-	defer func() {
-		room.RemovePlayer(player.id)
-		log.Debugf("Done reading messages. Closing connection to player: %s\n", player.id)
-		player.conn.Close()
-	}()
-
-	for {
-		var msg Message
-		err := player.conn.ReadJSON(&msg)
-		if err != nil {
-			log.Errorf("Read error: %v\n", err)
-			break
-		}
-
-		// Check if the message has a RequestID and handle it
-		if msg.MessageId != nil {
-			player.mutex.Lock()
-			responseChan, exists := player.responseChan[*msg.MessageId]
-			if exists {
-				responseChan <- msg
-				close(responseChan)
-				delete(player.responseChan, *msg.MessageId)
-				player.mutex.Unlock()
-				continue
-			}
-			player.mutex.Unlock()
-		}
-
-		// Otherwise, process the message normally
-		log.Debugf("Received message: %+v\n", msg)
-		if room.handler != nil {
-			room.handler(room.id, player.id, msg)
-		}
-	}
-}
-
-func (player *WsPlayer) writeMessages() {
-	log.Debugf("Writing message to player: %s\n", player.id)
-	defer func() { 
-		log.Debugf("Closing connection to player: %s\n", player.id)
-		player.conn.Close()
-	}()
-	for msg := range player.sendChan {
-		err := player.conn.WriteJSON(msg)
-		if err != nil {
-			log.Errorf("Write error: %v\n", err)
-			break
-		}
-	}
-	log.Debugf("Done writing messages for player: %s\n", player.id)
+	go player.autoSendSingleMessages()
+	go player.autoSendBroadcastMessages()
 }
 
