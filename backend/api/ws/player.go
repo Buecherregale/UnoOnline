@@ -19,12 +19,13 @@ func (player *WsPlayer) SendMessage(msgType string, payload any) {
 		Type:    msgType,
 		Payload: json.RawMessage(bytes),
 	}
-	log.Debugf("Player %s wants to send message of type: %s\n", player.id, msgType)
+	log.Debugf("Sending message of type '%s' to player '%s'\n", msgType, player.id)
 	select {
 	case player.sendChan <- msg:
 		return
 	default:
 		log.Errorf("failed to send message to player %s: send channel is full or closed\n", player.id)
+		log.Debugf("current player channel size: %d\n", len(player.sendChan))
 	}
 }
 

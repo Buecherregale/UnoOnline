@@ -27,7 +27,7 @@ func (room *WsRoom) BroadcastMessage(msgType string, payload any) {
 		select {
 		case player.sendChan <- message:
 		default:
-			log.Errorf("failed to send message to player %s: send channel is full or closed\n", player.id)
+			log.Errorf("failed to send broadcast message to player %s: send channel is full or closed\n", player.id)
 		}
 	}
 }
@@ -40,6 +40,7 @@ func (room *WsRoom) RemovePlayer(playerId uuid.UUID) {
 		log.Errorf("requested player %s does not exist in room %s\n", playerId, room.id)
 		return
 	}
+	log.Debugf("Closing connection to player: %s\n", playerId)
 	player.conn.Close()
 	delete(room.Players, playerId)
 	close(player.sendChan)
@@ -56,7 +57,7 @@ func (room *WsRoom) AddPlayer(player *WsPlayer) {
 func (room *WsRoom) Run() {
 	for msg := range room.broadcast {
 		room.mutex.Lock()
-		for _, player := range room.Players {
+		for _, player := range room.Players {	
 			player.sendChan <- msg
 		}
 		room.mutex.Unlock()

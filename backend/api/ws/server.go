@@ -140,6 +140,7 @@ func (s *WsServer) handleConnection(w http.ResponseWriter, r *http.Request, room
 func (player *WsPlayer) readMessages(room *WsRoom) {
 	defer func() {
 		room.RemovePlayer(player.id)
+		log.Debugf("Done reading messages. Closing connection to player: %s\n", player.id)
 		player.conn.Close()
 	}()
 
@@ -174,7 +175,11 @@ func (player *WsPlayer) readMessages(room *WsRoom) {
 }
 
 func (player *WsPlayer) writeMessages() {
-	defer player.conn.Close()
+	log.Debugf("Writing message to player: %s\n", player.id)
+	defer func() { 
+		log.Debugf("Closing connection to player: %s\n", player.id)
+		player.conn.Close()
+	}()
 	for msg := range player.sendChan {
 		err := player.conn.WriteJSON(msg)
 		if err != nil {
@@ -182,5 +187,6 @@ func (player *WsPlayer) writeMessages() {
 			break
 		}
 	}
+	log.Debugf("Done writing messages for player: %s\n", player.id)
 }
 
