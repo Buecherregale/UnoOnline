@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import type { Card, Player, Room } from "~/util/models";
+import type { Card, Player, Room, StartGameRequest } from "~/util/models";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 import { useGameLogic } from "~/composables/useGameLogic";
 import { handleApiError, validatePlayerSession } from "~/util/errorUtils";
 import type { WebSocketEventHandlers } from "~/util/webSocketHelper";
 import { useWebSocket } from "~/composables/useWebSocket";
-const { addEventHandlers, isConnected } = useWebSocket();
+const { addEventHandlers, isConnected, removeEventHandlers } = useWebSocket();
 
 const route = useRoute();
 const gameId: string = route.params.id as string;
+const shouldStartGame = ref<boolean>(route.query.start === "true");
 const room = ref<Room | null>(null);
 const players = ref<Player[]>([]);
 const currentPlayerId = ref<string>("");
@@ -46,11 +47,20 @@ onMounted(async (): Promise<void> => {
   if (isConnected()) {
     console.log("adding event handlers");
     setGameHandlers();
+
+    // If this page was loaded via start button, trigger game start API call
+    if (shouldStartGame.value) {
+      await startGameViaAPI();
+    }
   } else {
     console.error("Unable to connect to the game");
   }
 
-  await startGameAPI();
+  await loadRoomData();
+});
+
+onBeforeUnmount((): void => {
+  removeEventHandlers(["onGameStarted", "onError"]);
 });
 
 function setGameHandlers() {
@@ -68,7 +78,32 @@ function setGameHandlers() {
   addEventHandlers(gameEventHandlers);
 }
 
-async function startGameAPI() {
+/**
+ * Starts the game via API call (only called by host)
+ */
+async function startGameViaAPI(): Promise<void> {
+  const player = loadPlayerFromCookie();
+  validatePlayerSession(player);
+
+  try {
+    const requestBody: StartGameRequest = {
+      id: player.id,
+    };
+
+    console.log("Starting game via API...");
+    await $fetch<Room>(`/api/rooms/${gameId}`, {
+      method: "POST",
+      body: requestBody,
+    });
+
+    // Reset the start flag after successful API call
+    shouldStartGame.value = false;
+  } catch (error) {
+    handleApiError(error);
+  }
+}
+
+async function loadRoomData() {
   isLoading.value = true;
   errorMessage.value = "";
 

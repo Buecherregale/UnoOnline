@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Room, Player, StartGameRequest } from "~/util/models";
+import type { Room, Player } from "~/util/models";
 import {
   loadRoomFromCookie,
   getHostStatusFromCookie,
@@ -8,7 +8,7 @@ import {
 } from "~/util/roomCookie";
 import type { WebSocketEventHandlers } from "~/util/webSocketHelper";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
-import { handleApiError, validatePlayerSession } from "~/util/errorUtils";
+import { validatePlayerSession } from "~/util/errorUtils";
 import { useClipboard } from "@vueuse/core";
 import { useWebSocket } from "~/composables/useWebSocket";
 
@@ -134,19 +134,8 @@ async function startRoom(): Promise<void> {
   const player = loadPlayerFromCookie();
   validatePlayerSession(player);
 
-  try {
-    const requestBody: StartGameRequest = {
-      id: player.id,
-    };
-
-    //start the game via api call
-    await $fetch<Room>(`/api/rooms/${id}`, {
-      method: "POST",
-      body: requestBody,
-    });
-  } catch (error) {
-    handleApiError(error);
-  }
+  // Navigate to game page with start parameter
+  await navigateTo(`/game/${id}?start=true`);
 }
 </script>
 
