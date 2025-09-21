@@ -2,6 +2,8 @@
 import type { Player, CreatePlayerRequest } from "~/util/models";
 import { savePlayerToCookie } from "~/util/playerCookie";
 import { handleApiError } from "~/util/errorUtils";
+import { usePlayerStore } from "~/stores/player";
+const playerStore = usePlayerStore();
 
 // Reactive state with explicit types
 const name = ref<string>("");
@@ -28,6 +30,7 @@ async function handleSubmit(): Promise<void> {
   if (name.value.trim()) {
     const player: Player = await playerFetches(name.value);
     savePlayerToCookie(player);
+    playerStore.setPlayer(player);
     await navigateTo("/hostOrJoin");
   } else {
     alert("Please enter a valid name.");
