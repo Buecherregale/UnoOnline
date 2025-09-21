@@ -16,16 +16,7 @@ const currentPlayerId = ref<string>("");
 const isLoading = ref<boolean>(false);
 const errorMessage = ref<string>("");
 
-// Mock game state - will be replaced with real WebSocket data later
-const playerHand = ref([
-  { color: "red", value: "5" },
-  { color: "blue", value: "7" },
-  { color: "green", value: "skip" },
-  { color: "yellow", value: "2" },
-  { color: "red", value: "draw2" },
-  { color: "wild", value: "wild" },
-  { color: "blue", value: "9" },
-]);
+const playerHand = ref<Card[]>([]);
 
 const topCard = ref<Card>({
   color: "green",
@@ -66,8 +57,11 @@ onBeforeUnmount((): void => {
 function setGameHandlers() {
   const gameEventHandlers: WebSocketEventHandlers = {
     onGameStarted: (card: Card): void => {
-      console.log("Top Card:", card);
       topCard.value = card;
+    },
+    onDrawCard: (cards: Card[]): void => {
+      playerHand.value.push(...cards);
+      console.log("drew Card:", cards[0]);
     },
     onError: (error: Error): void => {
       console.error("WebSocket error:", error);

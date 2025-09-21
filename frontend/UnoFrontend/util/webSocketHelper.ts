@@ -19,6 +19,7 @@ export interface WebSocketEventHandlers {
   onPlayerLeft?: (player: Player, newOwner: Player) => void;
   onRoomStarted?: (roomId: string) => void;
   onGameStarted?: (card: Card) => void;
+  onDrawCard?: (cards: Card[]) => void;
   onError?: (error: Error) => void;
   onStateChange?: (state: WebSocketState) => void;
 }
@@ -125,12 +126,22 @@ export default class WebSocketHelper {
           this.eventHandlers.onPlayerLeft?.(player, newOwner);
           break;
         case "RoomStartPayload":
+          //validation ob returned player gleiche wie in room
           this.eventHandlers.onRoomStarted?.(msg.payload);
           break;
         case "GameStartPayload":
           let Card = parseCardPayload(msg.payload);
           console.log("Game started:", Card);
           this.eventHandlers.onGameStarted?.(Card);
+          break;
+        case "YouDrawCardPayload":
+          let Cards = msg.payload.cards as any[];
+          let parsedCards: Card[] = [];
+          for (let i = 0; i < Cards.length; i++) {
+            let card = parseCardPayload(Cards[i]);
+            parsedCards.push(card);
+          }
+          this.eventHandlers.onDrawCard?.(parsedCards);
           break;
         default:
           console.warn("Unknown message type:", msg.type);
