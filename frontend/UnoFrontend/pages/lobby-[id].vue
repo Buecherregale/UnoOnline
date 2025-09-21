@@ -8,9 +8,14 @@ import {
 } from "~/util/roomCookie";
 import type { WebSocketEventHandlers } from "~/util/webSocketHelper";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
-import { validatePlayerSession } from "~/util/errorUtils";
+import { validatePlayerSession, validateRoomId } from "~/util/errorUtils";
 import { useClipboard } from "@vueuse/core";
 import { useWebSocket } from "~/composables/useWebSocket";
+
+import { usePlayerStore } from "~/stores/player";
+import { useRoomStore } from "~/stores/room";
+const playerStore = usePlayerStore();
+const roomStore = useRoomStore();
 
 definePageMeta({
   middleware: ["check-join"],
@@ -19,21 +24,28 @@ definePageMeta({
 // Route and player data with explicit types
 const route = useRoute();
 const id: string = route.params.id as string;
-const player: Player | null = loadPlayerFromCookie();
+let player = ref<Player | null>(playerStore.getPlayer);
+if (!player.value) {
+  let tmp = loadPlayerFromCookie();
+  validatePlayerSession(tmp);
+  player.value = tmp;
+}
 
 const source = ref<string>(route.params.id as string);
 const { copy, copied, isSupported } = useClipboard({ source });
 
 // State management with explicit types
-const room = useState<Room | null>("room", (): Room | null => {
-  return loadRoomFromCookie();
-});
+let room = ref<Room | null>(roomStore.getRoom);
+if (!room.value) {
+  let tmp = loadRoomFromCookie();
+  validateRoomId(tmp!.id);
+  room.value = tmp;
+}
 
-const isHost = useState<boolean>("isHost", (): boolean => {
-  return getHostStatusFromCookie();
-});
-
-const players = ref<Player[]>(room?.value?.players || []);
+const isHost = ref<boolean>(roomStore.getIsHost);
+if (!isHost.value) {
+  isHost.value = getHostStatusFromCookie();
+}
 
 // Use the global WebSocket service
 const { connect, addEventHandlers, removeEventHandlers, forceDisconnect } =
@@ -45,7 +57,7 @@ watch(
   (newRoom: Room | null): void => {
     if (newRoom) {
       saveRoomToCookie(newRoom);
-      players.value = newRoom.players || [];
+      roomStore.updateRoom(newRoom);
     }
   },
   { deep: true }
@@ -61,30 +73,30 @@ onMounted(async (): Promise<void> => {
       room.value = data;
     }
   }
-  players.value = room.value?.players || [];
 
   // Connect to WebSocket using global service
   if (player) {
-    connect(player.id, id);
+    connect(player?.value?.id!, id);
 
     // Set up event handlers specific to lobby
     const lobbyEventHandlers: WebSocketEventHandlers = {
       onPlayerJoined: (newPlayer: Player): void => {
         console.log("new Player:", newPlayer);
-        players.value.push(newPlayer);
+        room?.value?.players.push(newPlayer);
       },
       onPlayerLeft: (oldPlayer: Player, newOwner: Player): void => {
         console.log("Player left:", oldPlayer);
         // Remove player from list
-        let index = players.value.findIndex((p) => p.id === oldPlayer.id);
-        console.log("index:", index);
+        let index = room!.value!.players.findIndex(
+          (p) => p.id === oldPlayer.id
+        );
         if (index !== -1) {
-          players.value.splice(index, 1);
+          room?.value?.players.splice(index, 1);
         }
         // Update room owner
         room.value!.owner = newOwner;
         // Update status if current player is the new owner
-        if (newOwner.id === player.id) {
+        if (newOwner.id === player?.value!.id) {
           isHost.value = true;
           saveHostStatusToCookie(true);
         }
@@ -158,7 +170,7 @@ async function startRoom(): Promise<void> {
     </div>
     <div class="grid grid-cols-2 gap-4">
       <div
-        v-for="player in players"
+        v-for="player in room!.players"
         :key="player.id"
         class="bg-gray-100 text-center p-4 rounded-xl border-2 border-gray-300 shadow-md"
       >

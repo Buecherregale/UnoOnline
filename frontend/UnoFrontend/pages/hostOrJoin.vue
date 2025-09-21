@@ -11,6 +11,11 @@ const errorMessage = ref<string>("");
 
 const { createRoom, joinRoom, enterLobby } = useRoomActions();
 
+const roomStore = useRoomStore();
+onMounted(() => {
+  roomStore.clearRoom();
+});
+
 /**
  * Handles host game confirmation with proper error handling
  */

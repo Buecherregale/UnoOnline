@@ -30,22 +30,5 @@ export const usePlayerStore = defineStore("player", {
         this.player.name = name;
       }
     },
-
-    // Action-basierte Getter für Funktions-Syntax
-    getPlayerAsAction(): Player | null {
-      return this.player;
-    },
-
-    getPlayerNameAsAction(): string {
-      return this.player?.name || "";
-    },
-
-    getPlayerIdAsAction(): string {
-      return this.player?.id || "";
-    },
-
-    hasPlayerAsAction(): boolean {
-      return this.isLoggedIn && this.player !== null;
-    },
   },
 });

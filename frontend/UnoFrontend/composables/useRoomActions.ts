@@ -6,18 +6,26 @@ import {
   validatePlayerSession,
   validateRoomId,
 } from "~/util/errorUtils";
+import { usePlayerStore } from "~/stores/player";
+import { useRoomStore } from "~/stores/room";
 
 export const useRoomActions = () => {
   /**
    * Creates a new room with the specified player count
    */
   const createRoom = async (maxPlayers: number): Promise<Room> => {
-    const player = loadPlayerFromCookie();
-    validatePlayerSession(player);
+    const playerStore = usePlayerStore();
+
+    let playerId = playerStore.getPlayerId;
+    if (!playerId || playerId.trim() === "") {
+      const player = loadPlayerFromCookie();
+      validatePlayerSession(player);
+      playerId = player.id;
+    }
 
     try {
       const requestBody: CreateRoomRequest = {
-        id: player.id,
+        id: playerId,
         maxPlayers,
       };
 
@@ -36,14 +44,20 @@ export const useRoomActions = () => {
    * Joins an existing room by ID
    */
   const joinRoom = async (roomId: string): Promise<Room> => {
+    const playerStore = usePlayerStore();
+
     validateRoomId(roomId);
 
-    const player = loadPlayerFromCookie();
-    validatePlayerSession(player);
+    let playerId = playerStore.getPlayerId;
+    if (!playerId || playerId.trim() === "") {
+      const player = loadPlayerFromCookie();
+      validatePlayerSession(player);
+      playerId = player.id;
+    }
 
     try {
       const requestBody: JoinRoomRequest = {
-        id: player.id,
+        id: playerId,
       };
 
       const room: Room = await $fetch<Room>(
@@ -64,10 +78,10 @@ export const useRoomActions = () => {
    * Saves room state and navigates to lobby
    */
   const enterLobby = async (room: Room, isHost: boolean): Promise<void> => {
-    saveGameStateToCookies(room, isHost);
+    const roomStore = useRoomStore();
 
-    useState<Room>("rooms", () => room);
-    useState<boolean>("isHost", () => isHost);
+    saveGameStateToCookies(room, isHost);
+    roomStore.setRoom(room, isHost);
 
     await navigateTo(`/lobby-${room.id}`);
   };

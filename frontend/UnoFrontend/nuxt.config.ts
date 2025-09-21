@@ -14,5 +14,8 @@ export default defineNuxtConfig({
       experimental: {
           websocket: true
       },
-  }
+  },
+  pinia: {
+    storesDirs: ['./stores/**'],
+  },
 })
