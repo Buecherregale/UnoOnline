@@ -28,9 +28,9 @@ export const useRoomStore = defineStore("room", {
       this.isHost = false;
     },
 
-    updateRoom(room: Room) {
+    updateRoom(room: Partial<Room>) {
       if (this.room) {
-        this.room = room;
+        this.room = { ...this.room, ...room };
       }
     },
 

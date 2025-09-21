@@ -2,17 +2,37 @@
 import type { Card, Player, Room, StartGameRequest } from "~/util/models";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 import { useGameLogic } from "~/composables/useGameLogic";
-import { handleApiError, validatePlayerSession } from "~/util/errorUtils";
+import {
+  handleApiError,
+  validatePlayerSession,
+  validateRoomId,
+} from "~/util/errorUtils";
 import type { WebSocketEventHandlers } from "~/util/webSocketHelper";
 import { useWebSocket } from "~/composables/useWebSocket";
 const { addEventHandlers, isConnected, removeEventHandlers } = useWebSocket();
+import { loadRoomFromCookie } from "~/util/roomCookie";
 
 const route = useRoute();
 const gameId: string = route.params.id as string;
 const shouldStartGame = ref<boolean>(route.query.start === "true");
-const room = ref<Room | null>(null);
-const players = ref<Player[]>([]);
-const currentPlayerId = ref<string>("");
+
+const roomStore = useRoomStore();
+const playerStore = usePlayerStore();
+
+let room = ref<Room | null>(roomStore.getRoom);
+if (!room.value) {
+  let tmp = loadRoomFromCookie();
+  validateRoomId(tmp!.id);
+  room.value = tmp;
+}
+
+let currentPlayer = ref<Player | null>(playerStore.getPlayer);
+if (!currentPlayer.value) {
+  let tmp = loadPlayerFromCookie();
+  validatePlayerSession(tmp);
+  currentPlayer.value = tmp;
+}
+
 const isLoading = ref<boolean>(false);
 const errorMessage = ref<string>("");
 
@@ -105,11 +125,7 @@ async function loadRoomData() {
     const data: Room = await $fetch<Room>(`/api/rooms/${gameId}`);
     if (data) {
       room.value = data;
-      players.value = data.players || [];
-
-      const currentPlayer: Player | null = loadPlayerFromCookie();
-      validatePlayerSession(currentPlayer);
-      currentPlayerId.value = currentPlayer.id;
+      roomStore.updateRoom(data);
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -126,7 +142,7 @@ async function loadRoomData() {
  * Computes player positions based on count and current player position
  */
 const playerPositions = computed(() => {
-  return getPlayerPositions(players.value, currentPlayerId.value);
+  return getPlayerPositions(room?.value!.players, currentPlayer.value!.id);
 });
 
 /**
@@ -155,7 +171,7 @@ function handleDrawCard(): void {
 /**
  * Handles playing a card from player's hand
  */
-function handlePlayCard(card: Card, index: number): void {
+function handlePlayCard(card: Card, index: number) {
   console.log(`${card.color} ${card.value} gespielt`);
   console.log("Karte gespielt");
 

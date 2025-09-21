@@ -12,8 +12,6 @@ import { validatePlayerSession, validateRoomId } from "~/util/errorUtils";
 import { useClipboard } from "@vueuse/core";
 import { useWebSocket } from "~/composables/useWebSocket";
 
-import { usePlayerStore } from "~/stores/player";
-import { useRoomStore } from "~/stores/room";
 const playerStore = usePlayerStore();
 const roomStore = useRoomStore();
 
