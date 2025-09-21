@@ -17,7 +17,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     !to.fullPath.includes("/game");
   let leaveGame =
     from.fullPath.includes("/game") && to.fullPath !== from.fullPath;
-  if (toGame && leaveGame) {
+  if (toGame || leaveGame) {
     // Show confirmation dialog before leaving lobby
     if (!window.confirm("You are in a Lobby are you Sure you want to leave?")) {
       return abortNavigation();
