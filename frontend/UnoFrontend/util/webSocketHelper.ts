@@ -198,7 +198,7 @@ export default class WebSocketHelper {
   /**
    * Sends a message via WebSocket
    */
-  private sendMessage(message: message): boolean {
+  public sendMessage(message: message): boolean {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       try {
         this.socket.send(JSON.stringify(message));
@@ -206,7 +206,6 @@ export default class WebSocketHelper {
         return true;
       } catch (error) {
         console.error("Error sending message:", error);
-        this.eventHandlers.onError?.(error as Error);
         return false;
       }
     } else {

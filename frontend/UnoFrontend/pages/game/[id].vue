@@ -134,15 +134,46 @@ const playerPositions = computed(() => {
  */
 function handleDrawCard(): void {
   console.log("Karte vom Stapel gezogen");
-  // TODO: Implement WebSocket communication
+
+  const player = loadPlayerFromCookie();
+  validatePlayerSession(player);
+
+  const drawCardMessage = {
+    type: "PlayerDrawsCardsPayload",
+    payload: {
+      player: player,
+      amount: 1,
+    },
+    message_id: crypto.randomUUID(),
+    expects_reply: true,
+  };
+
+  const { sendMessage } = useWebSocket();
+  sendMessage(drawCardMessage);
 }
 
 /**
  * Handles playing a card from player's hand
  */
-function handlePlayCard(card: any, index: number): void {
+function handlePlayCard(card: Card, index: number): void {
   console.log(`${card.color} ${card.value} gespielt`);
-  // TODO: Validate card play and send to server
+  console.log("Karte gespielt");
+
+  const player = loadPlayerFromCookie();
+  validatePlayerSession(player);
+
+  const playCardMessage = {
+    type: "CardPlayedPayload",
+    payload: {
+      player: player,
+      card: card,
+    },
+    message_id: crypto.randomUUID(),
+    expects_reply: true,
+  };
+
+  const { sendMessage } = useWebSocket();
+  sendMessage(playCardMessage);
   playerHand.value.splice(index, 1);
 }
 </script>

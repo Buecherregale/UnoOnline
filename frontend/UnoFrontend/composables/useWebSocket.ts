@@ -2,6 +2,7 @@ import WebSocketHelper, {
   type WebSocketEventHandlers,
   WebSocketState,
 } from "~/util/webSocketHelper";
+import type { message } from "~/util/models";
 
 /**
  * Global WebSocket service that persists across page navigation
@@ -147,6 +148,13 @@ class WebSocketService {
   public forceDisconnect(): void {
     this.disconnect();
   }
+
+  /**
+   * Sends a message via WebSocket
+   */
+  public sendMessage(message: message): boolean {
+    return this.wsHelper?.sendMessage(message) ?? false;
+  }
 }
 
 /**
@@ -167,5 +175,6 @@ export const useWebSocket = () => {
     reconnect: service.reconnect.bind(service),
     disconnect: service.disconnect.bind(service),
     forceDisconnect: service.forceDisconnect.bind(service),
+    sendMessage: service.sendMessage.bind(service),
   };
 };
