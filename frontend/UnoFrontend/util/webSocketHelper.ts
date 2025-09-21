@@ -268,4 +268,3 @@ export default class WebSocketHelper {
     this.connect();
   }
 }
-

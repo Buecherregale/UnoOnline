@@ -11,8 +11,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   if (import.meta.server) return;
 
   // Check if leaving a lobby and navigating to different page except game
-  let toGame = from.fullPath.includes("/lobby") && to.fullPath !== from.fullPath && !to.fullPath.includes("/game");
-  let leaveGame = from.fullPath.includes("/game") && to.fullPath !== from.fullPath;
+  let toGame =
+    from.fullPath.includes("/lobby") &&
+    to.fullPath !== from.fullPath &&
+    !to.fullPath.includes("/game");
+  let leaveGame =
+    from.fullPath.includes("/game") && to.fullPath !== from.fullPath;
   if (toGame && leaveGame) {
     // Show confirmation dialog before leaving lobby
     if (!window.confirm("You are in a Lobby are you Sure you want to leave?")) {

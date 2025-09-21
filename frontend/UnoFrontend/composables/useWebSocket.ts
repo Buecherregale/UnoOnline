@@ -51,7 +51,9 @@ class WebSocketService {
         this.wsHelper.setEventHandlers(this.eventHandlers);
       }
 
-      console.log(`WebSocket service connected for player ${playerId} in room ${roomId}`);
+      console.log(
+        `WebSocket service connected for player ${playerId} in room ${roomId}`
+      );
     } else {
       console.log("WebSocket service reusing existing connection");
     }
@@ -80,7 +82,9 @@ class WebSocketService {
   /**
    * Removes specific event handlers
    */
-  public removeEventHandlers(handlerKeys: (keyof WebSocketEventHandlers)[]): void {
+  public removeEventHandlers(
+    handlerKeys: (keyof WebSocketEventHandlers)[]
+  ): void {
     handlerKeys.forEach((key) => {
       delete this.eventHandlers[key];
     });

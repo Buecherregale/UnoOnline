@@ -36,7 +36,8 @@ const isHost = useState<boolean>("isHost", (): boolean => {
 const players = ref<Player[]>(room?.value?.players || []);
 
 // Use the global WebSocket service
-const { connect, addEventHandlers, removeEventHandlers, forceDisconnect } = useWebSocket();
+const { connect, addEventHandlers, removeEventHandlers, forceDisconnect } =
+  useWebSocket();
 
 // Save rooms to cookie whenever it changes
 watch(
@@ -109,7 +110,12 @@ onMounted(async (): Promise<void> => {
  */
 onBeforeUnmount((): void => {
   // Remove only lobby-specific event handlers
-  removeEventHandlers(['onPlayerJoined', 'onPlayerLeft', 'onRoomStarted', 'onError']);
+  removeEventHandlers([
+    "onPlayerJoined",
+    "onPlayerLeft",
+    "onRoomStarted",
+    "onError",
+  ]);
 });
 
 /**
