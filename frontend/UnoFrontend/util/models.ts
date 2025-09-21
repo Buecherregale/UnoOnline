@@ -15,35 +15,20 @@ export type Room = {
   owner: Player; // Room creator/host
 };
 
-// Component Props Interfaces
-export interface PlayerCardProps {
-  player: Player;
-  isCurrentPlayer?: boolean;
-  cardCount?: number;
-}
+export type CardColor = "red" | "green" | "blue" | "yellow" | "black";
 
-export interface GameBoardProps {
-  players: Player[];
-  currentPlayerId: string;
-  roomId: string;
-}
+export type CardValue =
+  | number
+  | "skip"
+  | "reverse"
+  | "plus2"
+  | "wild"
+  | "wildcard4";
 
-// Event Types
-export interface PlayerJoinedEvent {
-  type: "player-joined";
-  player: Player;
-  room: Room;
-}
-
-export interface PlayerLeftEvent {
-  type: "player-left";
-  playerId: string;
-  room: Room;
-}
-
-export interface GameStartedEvent {
-  type: "game-started";
-  roomId: string;
+export interface Card {
+  color: CardColor;
+  value: CardValue;
+  chosen: CardColor | null; // For wild cards, the color chosen by the player
 }
 
 export interface RoomUpdatedEvent {
@@ -72,13 +57,6 @@ export interface StartGameRequest {
   id: string;
 }
 
-// Navigation Types
-export interface NavigationState {
-  player: Player | null;
-  room: Room | null;
-  isHost: boolean;
-}
-
 // Utility Types
 export type PlayerPosition = "top" | "bottom" | "left" | "right";
 
@@ -91,5 +69,5 @@ export type message = {
   type: string; // the name of the payload type (the tags below + `Payload`)
   payload: any; // the struct instance from below
   MessageId: string; // unique id to trace messages. Important for answers to messages
-  ExpectsAnswer: boolean // if true the server expects the client to reply with the apropriate message with the SAME MessageId
+  ExpectsAnswer: boolean; // if true the server expects the client to reply with the apropriate message with the SAME MessageId
 };

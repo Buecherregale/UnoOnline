@@ -21,10 +21,7 @@
 </template>
 
 <script setup lang="ts">
-interface Card {
-  color: string;
-  value: string;
-}
+import type { Card } from "~/util/models";
 
 interface Props {
   topCard?: Card;

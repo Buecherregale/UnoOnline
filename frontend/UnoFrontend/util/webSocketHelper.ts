@@ -1,4 +1,5 @@
-import type { message, Player } from "~/util/models";
+import type { Card, message, Player } from "~/util/models";
+import { parseCardPayload } from "~/util/cardParser";
 
 /**
  * WebSocket connection states
@@ -17,6 +18,7 @@ export interface WebSocketEventHandlers {
   onPlayerJoined?: (player: Player) => void;
   onPlayerLeft?: (player: Player, newOwner: Player) => void;
   onRoomStarted?: (roomId: string) => void;
+  onGameStarted?: (card: Card) => void;
   onError?: (error: Error) => void;
   onStateChange?: (state: WebSocketState) => void;
 }
@@ -125,6 +127,11 @@ export default class WebSocketHelper {
         case "RoomStartPayload":
           this.eventHandlers.onRoomStarted?.(msg.payload);
           break;
+        case "GameStartPayload":
+          let Card = parseCardPayload(msg.payload);
+          console.log("Game started:", Card);
+          this.eventHandlers.onGameStarted?.(Card);
+          break;
         default:
           console.warn("Unknown message type:", msg.type);
       }
@@ -209,8 +216,6 @@ export default class WebSocketHelper {
     }
   }
 
-  // Public API methods with explicit return types
-
   /**
    * Checks if WebSocket is currently connected
    */
@@ -233,17 +238,6 @@ export default class WebSocketHelper {
    */
   public setEventHandlers(handlers: WebSocketEventHandlers): void {
     this.eventHandlers = { ...this.eventHandlers, ...handlers };
-  }
-
-  /**
-   * Sends start game message
-   */
-  public startGame(): void {
-    const message: message = {
-      type: "StartGamePayload",
-      payload: this.config.roomId,
-    };
-    this.queueMessage(message);
   }
 
   /**

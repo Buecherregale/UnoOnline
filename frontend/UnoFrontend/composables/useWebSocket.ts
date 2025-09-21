@@ -122,13 +122,6 @@ class WebSocketService {
   }
 
   /**
-   * Sends start game message
-   */
-  public startGame(): void {
-    this.wsHelper?.startGame();
-  }
-
-  /**
    * Manually reconnects WebSocket
    */
   public reconnect(): void {
@@ -171,7 +164,6 @@ export const useWebSocket = () => {
     getState: service.getState.bind(service),
     getCurrentRoomId: service.getCurrentRoomId.bind(service),
     getCurrentPlayerId: service.getCurrentPlayerId.bind(service),
-    startGame: service.startGame.bind(service),
     reconnect: service.reconnect.bind(service),
     disconnect: service.disconnect.bind(service),
     forceDisconnect: service.forceDisconnect.bind(service),

@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import type { Player, Room } from "~/util/models";
+import type { Card, Player, Room } from "~/util/models";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 import { useGameLogic } from "~/composables/useGameLogic";
 import { handleApiError, validatePlayerSession } from "~/util/errorUtils";
+import type { WebSocketEventHandlers } from "~/util/webSocketHelper";
+import { useWebSocket } from "~/composables/useWebSocket";
+const { addEventHandlers, isConnected } = useWebSocket();
 
 const route = useRoute();
 const gameId: string = route.params.id as string;
@@ -23,7 +26,11 @@ const playerHand = ref([
   { color: "blue", value: "9" },
 ]);
 
-const topCard = ref({ color: "red", value: "8" });
+const topCard = ref<Card>({
+  color: "green",
+  value: 3,
+  chosen: null,
+});
 const deckCount = ref(76);
 
 const { getPlayerPositions } = useGameLogic();
@@ -36,6 +43,32 @@ definePageMeta({
  * Fetches room data and initializes game state
  */
 onMounted(async (): Promise<void> => {
+  if (isConnected()) {
+    console.log("adding event handlers");
+    setGameHandlers();
+  } else {
+    console.error("Unable to connect to the game");
+  }
+
+  await startGameAPI();
+});
+
+function setGameHandlers() {
+  const gameEventHandlers: WebSocketEventHandlers = {
+    onGameStarted: (card: Card): void => {
+      console.log("Top Card:", card);
+      topCard.value = card;
+    },
+    onError: (error: Error): void => {
+      console.error("WebSocket error:", error);
+      // Handle WebSocket errors appropriately
+    },
+  };
+
+  addEventHandlers(gameEventHandlers);
+}
+
+async function startGameAPI() {
   isLoading.value = true;
   errorMessage.value = "";
 
@@ -58,7 +91,7 @@ onMounted(async (): Promise<void> => {
   } finally {
     isLoading.value = false;
   }
-});
+}
 
 /**
  * Computes player positions based on count and current player position
