@@ -1,4 +1,4 @@
-import type { Player, Room } from "~/util/models";
+import type { Player } from "~/util/models";
 
 const COOKIE_OPTIONS = {
   maxAge: 60 * 60 * 24, // 24 Stunden
@@ -16,7 +16,7 @@ export function savePlayerToCookie(player: Player): void {
     });
 
     playerCookie.value = player;
-    console.log("Player saved to cookie:", { name: player.name });
+    //console.log("Player saved to cookie:", { name: player.name });
   } catch (error) {
     console.error("Failed to save rooms to cookie:", error);
   }
@@ -33,7 +33,7 @@ export function loadPlayerFromCookie(): Player | null {
     });
 
     const cookieValue = playerCookie.value;
-    console.log("Player loaded from cookie:", cookieValue);
+    //console.log("Player loaded from cookie:", cookieValue);
 
     return cookieValue;
   } catch (error) {

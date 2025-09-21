@@ -16,7 +16,7 @@ export function saveRoomToCookie(room: Room): void {
     });
 
     roomCookie.value = room;
-    console.log("Room saved to cookie:", { roomId: room.id });
+    //console.log("Room saved to cookie:", { roomId: room.id });
   } catch (error) {
     console.error("Failed to save rooms to cookie:", error);
   }
@@ -33,7 +33,7 @@ export function loadRoomFromCookie(): Room | null {
     });
 
     const cookieValue = roomCookie.value;
-    console.log("Room loaded from cookie:", cookieValue);
+    //console.log("Room loaded from cookie:", cookieValue);
 
     return cookieValue;
   } catch (error) {
@@ -53,7 +53,7 @@ export function saveHostStatusToCookie(isHost: boolean): void {
     });
 
     hostCookie.value = isHost;
-    console.log("Host status saved to cookie:", { isHost });
+    //console.log("Host status saved to cookie:", { isHost });
   } catch (error) {
     console.error("Failed to save host status to cookie:", error);
   }
