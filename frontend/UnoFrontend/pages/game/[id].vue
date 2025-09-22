@@ -1,50 +1,45 @@
 <script setup lang="ts">
-import type {
-  Card,
-  message,
-  Player,
-  Room,
-  StartGameRequest,
-  uuid,
-} from "~/util/models";
-import { loadPlayerFromCookie } from "~/util/playerCookie";
+import type { Card, Player, Room, uuid } from "~/util/models";
 import { useGameLogic } from "~/composables/useGameLogic";
-import {
-  handleApiError,
-  validatePlayerSession,
-  validateRoomId,
-} from "~/util/errorUtils";
-import type { WebSocketEventHandlers } from "~/util/webSocketHelper";
 import { useWebSocket } from "~/composables/useWebSocket";
-const { addEventHandlers, isConnected, removeEventHandlers } = useWebSocket();
-import { loadRoomFromCookie } from "~/util/roomCookie";
 import { useGameStore } from "~/stores/game";
+import { useGameState } from "~/composables/useGameState";
+import { useGameApi } from "~/composables/useGameApi";
+import { useGameMessages } from "~/composables/useGameMessages";
+import { useGameEventHandlers } from "~/composables/useGameEventHandlers";
 
 const route = useRoute();
 const gameId: string = route.params.id as string;
 const shouldStartGame = ref<boolean>(route.query.start === "true");
-let lastMessageID = ref<uuid | null>(null);
+const lastMessageID = ref<uuid | null>(null);
 
 const roomStore = useRoomStore();
-const playerStore = usePlayerStore();
 const gameStore = useGameStore();
 
-let room = ref<Room | null>(roomStore.getRoom);
-if (!room.value) {
-  let tmp = loadRoomFromCookie();
-  validateRoomId(tmp!.id);
-  room.value = tmp;
-}
+// Initialize state using the new composable
+const { initializePlayer, initializeRoom } = useGameState();
+const room = ref<Room | null>(null);
+const currentPlayer = ref<Player | null>(null);
 
-let currentPlayer = ref<Player | null>(playerStore.getPlayer);
-if (!currentPlayer.value) {
-  let tmp = loadPlayerFromCookie();
-  validatePlayerSession(tmp);
-  currentPlayer.value = tmp;
+// Initialize player and room
+try {
+  currentPlayer.value = initializePlayer();
+  room.value = initializeRoom();
+} catch (error) {
+  console.error("Failed to initialize game state:", error);
 }
 
 const isLoading = ref<boolean>(false);
 const errorMessage = ref<string>("");
+
+const { addEventHandlers, isConnected, removeEventHandlers, sendMessage } =
+  useWebSocket();
+const { startRoom, startGame, loadRoomData: loadRoomDataApi } = useGameApi();
+const { createDrawCardMessage, createPlayCardMessage } = useGameMessages();
+const { createGameEventHandlers } = useGameEventHandlers(
+  currentPlayer,
+  lastMessageID
+);
 
 /**
  * Fetches room data and initializes game state
@@ -78,26 +73,7 @@ onBeforeUnmount((): void => {
 });
 
 function setGameHandlers() {
-  const gameEventHandlers: WebSocketEventHandlers = {
-    onGameStarted: (card: Card): void => {
-      gameStore.setTopCard(card);
-    },
-    onDrawCard: (cards: Card[]): void => {
-      gameStore.addToPlayerHand(cards);
-      console.log("drew Card:", cards[0]);
-    },
-    onAskCard: (_: Card[], id: uuid): void => {
-      // Start the 30-second timer for the current player
-      gameStore.startPlayerTimer(currentPlayer.value!.id);
-
-      lastMessageID.value = id;
-    },
-    onError: (error: Error): void => {
-      console.error("WebSocket error:", error);
-      // Handle WebSocket errors appropriately
-    },
-  };
-
+  const gameEventHandlers = createGameEventHandlers();
   addEventHandlers(gameEventHandlers);
 }
 
@@ -105,38 +81,24 @@ function setGameHandlers() {
  * Starts the room via API call (only called by host)
  */
 async function startRoomViaAPI(): Promise<void> {
-  try {
-    const requestBody: StartGameRequest = {
-      id: currentPlayer.value!.id,
-    };
-
-    console.log("Starting room via API...");
-    await $fetch<Room>(`/api/rooms/${gameId}`, {
-      method: "POST",
-      body: requestBody,
-    });
-  } catch (error) {
-    handleApiError(error);
+  if (!currentPlayer.value) {
+    console.error("No current player available");
+    return;
   }
+
+  await startRoom(gameId, currentPlayer.value.id);
 }
 
 /**
  * Starts the game via API call (only called by host)
  */
 async function startGameViaAPI(): Promise<void> {
-  try {
-    const requestBody: StartGameRequest = {
-      id: currentPlayer.value!.id,
-    };
-
-    console.log("Starting game via API...");
-    await $fetch<Room>(`/api/rooms/${gameId}/startgame`, {
-      method: "POST",
-      body: requestBody,
-    });
-  } catch (error) {
-    handleApiError(error);
+  if (!currentPlayer.value) {
+    console.error("No current player available");
+    return;
   }
+
+  await startGame(gameId, currentPlayer.value.id);
 
   // Reset the start flag after successful API call
   shouldStartGame.value = false;
@@ -147,7 +109,7 @@ async function loadRoomData() {
   errorMessage.value = "";
 
   try {
-    const data: Room = await $fetch<Room>(`/api/rooms/${gameId}`);
+    const data = await loadRoomDataApi(gameId);
     if (data) {
       room.value = data;
       roomStore.updateRoom(data);
@@ -156,7 +118,8 @@ async function loadRoomData() {
     if (error instanceof Error) {
       errorMessage.value = error.message;
     } else {
-      handleApiError(error);
+      console.error("Unknown error:", error);
+      errorMessage.value = "Ein unbekannter Fehler ist aufgetreten";
     }
   } finally {
     isLoading.value = false;
@@ -167,9 +130,13 @@ async function loadRoomData() {
  * Computes player positions based on count and current player position
  */
 const playerPositions = computed(() => {
+  if (!room.value?.players || !currentPlayer.value) {
+    return [];
+  }
+
   return useGameLogic().getPlayerPositions(
-    room?.value!.players,
-    currentPlayer.value!.id
+    room.value.players,
+    currentPlayer.value.id
   );
 });
 
@@ -179,17 +146,7 @@ const playerPositions = computed(() => {
 function handleDrawCard(): void {
   console.log("Karte vom Stapel gezogen");
 
-  const drawCardMessage = {
-    type: "PlayerDrawsCardsPayload",
-    payload: {
-      player: currentPlayer.value!,
-      amount: 1,
-    },
-    message_id: crypto.randomUUID(),
-    expects_reply: true,
-  };
-
-  const { sendMessage } = useWebSocket();
+  const drawCardMessage = createDrawCardMessage(currentPlayer.value!);
   sendMessage(drawCardMessage);
 
   // Clear timer when player takes action
@@ -203,17 +160,12 @@ function handlePlayCard(card: Card, index: number) {
   console.log(`${card.color} ${card.value} gespielt`);
   console.log("Karte gespielt");
 
-  const playCardMessage: message = {
-    type: "AnswerCardPayload",
-    payload: {
-      player: currentPlayer.value!,
-      card: card,
-    },
-    message_id: lastMessageID.value!,
-    expects_reply: false,
-  };
+  const playCardMessage = createPlayCardMessage(
+    currentPlayer.value!,
+    card,
+    lastMessageID.value!
+  );
 
-  const { sendMessage } = useWebSocket();
   sendMessage(playCardMessage);
   gameStore.removeCardFromHand(index);
 
