@@ -49,8 +49,7 @@ func (state *GameState) Run() {
 
 		if !toMove.canPlayACard(state.Stack.GetTop()) {
 			state.DrawCards(toMove, 1)
-		}
-		if toMove.canPlayACard(state.Stack.GetTop()) {
+		} else {
 			toMove.play(state)
 			if toMove.checkWin() {
 				state.Winner = toMove
@@ -65,11 +64,8 @@ func (player *GamePlayer) checkWin() bool {
 
 func (player *GamePlayer) play(state *GameState) {
 	choice, valid, timeout := AskCard(player)
-	if timeout {
-		return
-	}
 
-	if !valid {
+	if !valid || timeout {
 		state.DrawCards(player, 1)
 		return
 	}
