@@ -9,6 +9,7 @@ import (
 
 const PLAYER_SINGLE_CHANNEL_BUFFER_SIZE int = 7			// all 7 starting card messages 
 const PLAYER_BROADCAST_CHANNEL_BUFFER_SIZE int = 3
+const PLAYER_RESPOND_CHANNEL_BUFFER_SIZE int = 1
 
 type Message struct {
 	Type      		string          `json:"type"`
