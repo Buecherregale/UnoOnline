@@ -2,7 +2,7 @@
  * Server API endpoint to start a rooms
  * Acts as proxy between frontend and Go backend
  *
- * @route Post /api/rooms/{id}
+ * @route Post /api/rooms/{id}/startgame
  * @param event - Nuxt event handler context
  * @returns boolean - if starting the rooms was successful
  */
@@ -19,7 +19,7 @@ export default defineEventHandler(async (event): Promise<boolean> => {
 
   try {
     // Fetch rooms data from Go backend
-    const externalResponse: string = await $fetch(`/rooms/${id}`, {
+    const externalResponse: string = await $fetch(`/rooms/${id}/startgame`, {
       method: "POST",
       baseURL: apiBase,
       body: {

@@ -61,13 +61,19 @@ onMounted(async (): Promise<void> => {
 
     // If this page was loaded via start button, trigger game start API call
     if (shouldStartGame.value) {
-      await startGameViaAPI();
+      await startRoomViaAPI();
     }
   } else {
     console.error("Unable to connect to the game");
   }
 
   await loadRoomData();
+
+  await new Promise((r) => setTimeout(r, 1000));
+
+  if (shouldStartGame.value) {
+    await startGameViaAPI();
+  }
 });
 
 onBeforeUnmount((): void => {
@@ -93,9 +99,9 @@ function setGameHandlers() {
 }
 
 /**
- * Starts the game via API call (only called by host)
+ * Starts the room via API call (only called by host)
  */
-async function startGameViaAPI(): Promise<void> {
+async function startRoomViaAPI(): Promise<void> {
   const player = loadPlayerFromCookie();
   validatePlayerSession(player);
 
@@ -109,12 +115,34 @@ async function startGameViaAPI(): Promise<void> {
       method: "POST",
       body: requestBody,
     });
-
-    // Reset the start flag after successful API call
-    shouldStartGame.value = false;
   } catch (error) {
     handleApiError(error);
   }
+}
+
+/**
+ * Starts the game via API call (only called by host)
+ */
+async function startGameViaAPI(): Promise<void> {
+  const player = loadPlayerFromCookie();
+  validatePlayerSession(player);
+
+  try {
+    const requestBody: StartGameRequest = {
+      id: player.id,
+    };
+
+    console.log("Starting game via API...");
+    await $fetch<Room>(`/api/rooms/${gameId}/startgame`, {
+      method: "POST",
+      body: requestBody,
+    });
+  } catch (error) {
+    handleApiError(error);
+  }
+
+  // Reset the start flag after successful API call
+  shouldStartGame.value = false;
 }
 
 async function loadRoomData() {
