@@ -21,6 +21,7 @@ export interface WebSocketEventHandlers {
   onGameStarted?: (card: Card) => void;
   onDrawCard?: (cards: Card[]) => void;
   onPlayerDrawsCards?: (player: Player, amount: number) => void;
+  onAskCard?: (cards: Card[]) => void;
   onError?: (error: Error) => void;
   onStateChange?: (state: WebSocketState) => void;
 }
@@ -117,6 +118,8 @@ export default class WebSocketHelper {
       let player: Player | null = null;
       let newOwner: Player | null = null;
       let amount: number = 0;
+      let Cards: any[] = [] as any[];
+      let parsedCards: Card[] = [];
       switch (msg.type) {
         case "RoomJoinPayload":
           player = msg.payload.player as Player;
@@ -137,8 +140,8 @@ export default class WebSocketHelper {
           this.eventHandlers.onGameStarted?.(Card);
           break;
         case "YouDrawCardPayload":
-          let Cards = msg.payload.cards as any[];
-          let parsedCards: Card[] = [];
+          Cards = msg.payload.cards as any[];
+          parsedCards = [];
           for (let i = 0; i < Cards.length; i++) {
             let card = parseCardPayload(Cards[i]);
             parsedCards.push(card);
@@ -149,6 +152,15 @@ export default class WebSocketHelper {
           player = msg.payload.player as Player;
           amount = msg.payload.amount as number;
           this.eventHandlers.onPlayerDrawsCards?.(player, amount);
+          break;
+        case "AskCardPayload":
+          Cards = msg.payload.options as any[];
+          parsedCards = [];
+          for (let i = 0; i < Cards.length; i++) {
+            let card = parseCardPayload(Cards[i]);
+            parsedCards.push(card);
+          }
+          this.eventHandlers.onAskCard?.(parsedCards);
           break;
         default:
           console.warn("Unknown message type:", msg.type);

@@ -2,6 +2,13 @@
   <div class="player-area" :class="[`player-${position}`]">
     <div class="player-info">
       <div class="player-name">{{ player.name }}</div>
+      <div
+        v-if="showTimer"
+        class="player-timer"
+        :class="{ 'timer-warning': timerValue <= 10 }"
+      >
+        {{ timerValue }}s
+      </div>
       <div class="player-cards">
         <span class="cards-count">{{ cardCount }} Karten</span>
       </div>
@@ -11,6 +18,7 @@
 
 <script setup lang="ts">
 import type { Player } from "~/util/models";
+import { useGameStore } from "~/stores/game";
 
 interface Props {
   player: Player;
@@ -18,7 +26,16 @@ interface Props {
   cardCount: number;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+const gameStore = useGameStore();
+
+const showTimer = computed(() => {
+  return gameStore.getCurrentPlayerWithTimer === props.player.id;
+});
+
+const timerValue = computed(() => {
+  return gameStore.getCurrentPlayerTimer;
+});
 </script>
 
 <style scoped>
@@ -75,6 +92,37 @@ defineProps<Props>();
   background: #f0f0f0;
   padding: 4px 8px;
   border-radius: 10px;
+}
+
+.player-timer {
+  font-weight: bold;
+  font-size: 18px;
+  color: #1a3d1a;
+  background: #e8f5e8;
+  padding: 6px 12px;
+  border-radius: 15px;
+  margin: 5px 0;
+  border: 2px solid #4a7c59;
+  transition: all 0.3s ease;
+}
+
+.timer-warning {
+  background: #ffebee;
+  color: #d32f2f;
+  border-color: #d32f2f;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @media (max-width: 768px) {

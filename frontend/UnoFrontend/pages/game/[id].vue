@@ -11,6 +11,7 @@ import type { WebSocketEventHandlers } from "~/util/webSocketHelper";
 import { useWebSocket } from "~/composables/useWebSocket";
 const { addEventHandlers, isConnected, removeEventHandlers } = useWebSocket();
 import { loadRoomFromCookie } from "~/util/roomCookie";
+import { useGameStore } from "~/stores/game";
 
 const route = useRoute();
 const gameId: string = route.params.id as string;
@@ -18,6 +19,7 @@ const shouldStartGame = ref<boolean>(route.query.start === "true");
 
 const roomStore = useRoomStore();
 const playerStore = usePlayerStore();
+const gameStore = useGameStore();
 
 let room = ref<Room | null>(roomStore.getRoom);
 if (!room.value) {
@@ -35,21 +37,6 @@ if (!currentPlayer.value) {
 
 const isLoading = ref<boolean>(false);
 const errorMessage = ref<string>("");
-
-const playerHand = ref<Card[]>([]);
-
-const topCard = ref<Card>({
-  color: "green",
-  value: 3,
-  chosen: null,
-});
-const deckCount = ref(76);
-
-const { getPlayerPositions } = useGameLogic();
-
-definePageMeta({
-  middleware: ["check-join"],
-});
 
 /**
  * Fetches room data and initializes game state
@@ -77,17 +64,23 @@ onMounted(async (): Promise<void> => {
 });
 
 onBeforeUnmount((): void => {
-  removeEventHandlers(["onGameStarted", "onError"]);
+  removeEventHandlers(["onGameStarted", "onError", "onAskCard", "onDrawCard"]);
+  // Clear any running timer when leaving the page
+  gameStore.clearTimer();
 });
 
 function setGameHandlers() {
   const gameEventHandlers: WebSocketEventHandlers = {
     onGameStarted: (card: Card): void => {
-      topCard.value = card;
+      gameStore.setTopCard(card);
     },
     onDrawCard: (cards: Card[]): void => {
-      playerHand.value.push(...cards);
+      gameStore.addToPlayerHand(cards);
       console.log("drew Card:", cards[0]);
+    },
+    onAskCard: (cards: Card[]): void => {
+      // Start the 30-second timer for the current player
+      gameStore.startPlayerTimer(currentPlayer.value!.id);
     },
     onError: (error: Error): void => {
       console.error("WebSocket error:", error);
@@ -102,15 +95,12 @@ function setGameHandlers() {
  * Starts the room via API call (only called by host)
  */
 async function startRoomViaAPI(): Promise<void> {
-  const player = loadPlayerFromCookie();
-  validatePlayerSession(player);
-
   try {
     const requestBody: StartGameRequest = {
-      id: player.id,
+      id: currentPlayer.value!.id,
     };
 
-    console.log("Starting game via API...");
+    console.log("Starting room via API...");
     await $fetch<Room>(`/api/rooms/${gameId}`, {
       method: "POST",
       body: requestBody,
@@ -124,12 +114,9 @@ async function startRoomViaAPI(): Promise<void> {
  * Starts the game via API call (only called by host)
  */
 async function startGameViaAPI(): Promise<void> {
-  const player = loadPlayerFromCookie();
-  validatePlayerSession(player);
-
   try {
     const requestBody: StartGameRequest = {
-      id: player.id,
+      id: currentPlayer.value!.id,
     };
 
     console.log("Starting game via API...");
@@ -170,7 +157,10 @@ async function loadRoomData() {
  * Computes player positions based on count and current player position
  */
 const playerPositions = computed(() => {
-  return getPlayerPositions(room?.value!.players, currentPlayer.value!.id);
+  return useGameLogic().getPlayerPositions(
+    room?.value!.players,
+    currentPlayer.value!.id
+  );
 });
 
 /**
@@ -179,13 +169,10 @@ const playerPositions = computed(() => {
 function handleDrawCard(): void {
   console.log("Karte vom Stapel gezogen");
 
-  const player = loadPlayerFromCookie();
-  validatePlayerSession(player);
-
   const drawCardMessage = {
     type: "PlayerDrawsCardsPayload",
     payload: {
-      player: player,
+      player: currentPlayer.value!,
       amount: 1,
     },
     message_id: crypto.randomUUID(),
@@ -194,6 +181,9 @@ function handleDrawCard(): void {
 
   const { sendMessage } = useWebSocket();
   sendMessage(drawCardMessage);
+
+  // Clear timer when player takes action
+  gameStore.clearTimer();
 }
 
 /**
@@ -203,13 +193,10 @@ function handlePlayCard(card: Card, index: number) {
   console.log(`${card.color} ${card.value} gespielt`);
   console.log("Karte gespielt");
 
-  const player = loadPlayerFromCookie();
-  validatePlayerSession(player);
-
   const playCardMessage = {
     type: "CardPlayedPayload",
     payload: {
-      player: player,
+      player: currentPlayer.value!,
       card: card,
     },
     message_id: crypto.randomUUID(),
@@ -218,7 +205,10 @@ function handlePlayCard(card: Card, index: number) {
 
   const { sendMessage } = useWebSocket();
   sendMessage(playCardMessage);
-  playerHand.value.splice(index, 1);
+  gameStore.removeCardFromHand(index);
+
+  // Clear timer when player takes action
+  gameStore.clearTimer();
 }
 </script>
 
@@ -255,13 +245,16 @@ function handlePlayCard(card: Card, index: number) {
 
       <!-- Game center area -->
       <GameCenter
-        :top-card="topCard"
-        :deck-count="deckCount"
+        :top-card="gameStore.getTopCard"
+        :deck-count="gameStore.getDeckCount"
         @draw-card="handleDrawCard"
       />
 
       <!-- Current player's hand -->
-      <GamePlayerHand :cards="playerHand" @play-card="handlePlayCard" />
+      <GamePlayerHand
+        :cards="gameStore.getPlayerHand"
+        @play-card="handlePlayCard"
+      />
     </div>
   </div>
 </template>
