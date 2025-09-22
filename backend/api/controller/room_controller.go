@@ -163,7 +163,7 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 // POST: /rooms/{id}/
-func Start(w http.ResponseWriter, r *http.Request) {
+func StartRoom(w http.ResponseWriter, r *http.Request) {
 	var pId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&pId)
 	if err != nil {
@@ -204,6 +204,47 @@ func Start(w http.ResponseWriter, r *http.Request) {
 	ws.Server.Rooms[room.Id].BroadcastMessage("RoomStartPayload", ws.RoomStartPayload {
 		Players: room.Players,
 	})
+	// start game via separate endpoint
+}
+
+// POST: /rooms/{id}/startgame
+func StartGame(w http.ResponseWriter, r *http.Request) {
+	var pId uuidJson
+	err := json.NewDecoder(r.Body).Decode(&pId)
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	rId, err := util.ExtractUrlParam(r.URL.Path, 2)
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	asUUID, err := uuid.Parse(rId)
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	room := data.Rooms[asUUID]
+	if room == nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	if pId.Id != room.Owner.Id {
+		http.Error(w, "Not the owner", http.StatusForbidden)
+		return
+	}
+
+	// start via websocket
+	if len(ws.Server.Rooms[room.Id].Players) != len(room.Players) {
+		http.Error(w, "Amount of players not maching. Connect all via Websocket", http.StatusConflict)
+		return
+	}
+
+	log.Debugf("Starting the game the room: %s\n", room.Id)
 	state := game.StartRoom(room, uno.UnoCards(), uno.UnoCardPlacedListeners())
 	state.Run()
 }

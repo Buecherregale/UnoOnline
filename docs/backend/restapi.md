@@ -29,8 +29,22 @@
   - **Error Responses:** 
     - `404 - Not found`: Room does not exist.
 ---
-#### Start
+#### StartRoom
 **POST** `/rooms/{id}`
+- **Description:** Starts this room, sending a message to the websocket. 
+- **Path Parameters:**
+  - `id` (UUID): Unique identifier of the room.
+- **Request Body:**
+  - `id` (UUID): The id of the player. 
+- **Response:**
+  - `200 - OK`: Game started.
+  - **Error Responses:** 
+    - `403 - Forbidden`: Player is not the owner. 
+    - `404 - Not found`: Room or player does not exist.
+    - `409 - Conflict`: The number of players in the room is not equal to those connected to the websocket.
+---
+#### StartGame
+**POST** `/rooms/{id}/startgame`
 - **Description:** Starts the game for this room. 
 - **Path Parameters:**
   - `id` (UUID): Unique identifier of the room.
@@ -43,6 +57,7 @@
     - `404 - Not found`: Room or player does not exist.
     - `409 - Conflict`: The number of players in the room is not equal to those connected to the websocket.
 ---
+#
 #### Join
 **POST** `/rooms/{id}/players`
 - **Description:** Lets a player join a room. The player has to additionally join the websocket afterwards. 
