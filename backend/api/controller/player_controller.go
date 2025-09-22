@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Post: /players
 func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	var p struct {
 		Name string `json:"name"`
