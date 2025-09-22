@@ -20,9 +20,8 @@ func AskCard(player *GamePlayer) (*Card, bool, bool) {
 
 	// use valid card to determine := draw/play
 	validCard := false
-	var chosen *Card
 
-	for chosen != nil {
+	for {
 		reply, timeout, _ := player.WsP.AskAndWaitReply("AskCardPayload", message, time.Second*30)
 		if timeout {
 			return nil, false, true
@@ -35,13 +34,10 @@ func AskCard(player *GamePlayer) (*Card, bool, bool) {
 		card := p.Card.(Card)
 
 		if slices.Contains(player.Hand, card) {
-			chosen = &card
 			validCard = true
-			break;
+			return &card, validCard, false;
 		}
 	}
-
-	return chosen, validCard, false
 }
 
 func AskColor(player *GamePlayer, colors []int) (int, bool) {

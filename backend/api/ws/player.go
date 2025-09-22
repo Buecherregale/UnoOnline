@@ -57,9 +57,11 @@ func (player *WsPlayer) AskAndWaitReply(msgType string, payload any, timeout tim
 	select {
 	case response := <-responseChan:
 		// cleanup here probably necessary too
+		log.Debugf("Received response to message '%s' from player: %s\n", response.MessageId, player.id)
 		return &response, false, nil
 	case <-time.After(timeout):
 		// clean up response channel
+		log.Debugf("Reply timed out for message '%s' to player: %s\n", message.MessageId, player.id)
 		player.mutex.Lock()
 		delete(player.responseChans, messageId)
 		player.mutex.Unlock()
