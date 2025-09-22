@@ -6,7 +6,8 @@ import (
 	"uno_online/api/ws"
 )
 
-func AskCard(player *GamePlayer) (*Card, bool) {
+// Returns: chosen card, valid card chosen, request did timeout
+func AskCard(player *GamePlayer) (*Card, bool, bool) {
 	cps := make([]any, 0)
 	for _, c := range player.Hand {
 		var i any = c
@@ -17,13 +18,14 @@ func AskCard(player *GamePlayer) (*Card, bool) {
 		Options: cps,
 	}
 
+	// use valid card to determine := draw/play
 	validCard := false
-	var chosen Card
+	var chosen *Card
 
-	for !validCard {
+	for chosen != nil {
 		reply, timeout, _ := player.WsP.AskAndWaitReply("AskCardPayload", message, time.Second*30)
 		if timeout {
-			return nil, true
+			return nil, false, true
 		}
 		p, success := ws.MsgToPayload[ws.AnswerCardPayload](*reply)
 		if !success {
@@ -33,12 +35,13 @@ func AskCard(player *GamePlayer) (*Card, bool) {
 		card := p.Card.(Card)
 
 		if slices.Contains(player.Hand, card) {
-			chosen = card 
+			chosen = &card
+			validCard = true
+			break;
 		}
-		player.WsP.SendError(403, "invalid card chosen")
 	}
 
-	return &chosen, false
+	return chosen, validCard, false
 }
 
 func AskColor(player *GamePlayer, colors []int) (int, bool) {

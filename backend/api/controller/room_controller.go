@@ -22,7 +22,7 @@ type uuidJson struct {
 	Id uuid.UUID `json:"id"`
 }
 
-// POST: /room/
+// POST: /rooms/
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	var pId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&pId)
@@ -49,7 +49,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(room)
 }
 
-// POST: /room/{id}/players
+// POST: /rooms/{id}/players
 func JoinRoom(w http.ResponseWriter, r *http.Request) {
 	var jId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&jId)
@@ -96,7 +96,7 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(room)
 }
 
-// Delete: /room/{id}/players/
+// Delete: /rooms/{id}/players/
 func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	var lId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&lId)
@@ -162,7 +162,7 @@ func LeaveRoom(w http.ResponseWriter, r *http.Request) {
 	ws.Server.Rooms[room.Id].RemovePlayer(leaving.Id)
 }
 
-// POST: /room/{id}/
+// POST: /rooms/{id}/
 func Start(w http.ResponseWriter, r *http.Request) {
 	var pId uuidJson
 	err := json.NewDecoder(r.Body).Decode(&pId)
@@ -204,10 +204,11 @@ func Start(w http.ResponseWriter, r *http.Request) {
 	ws.Server.Rooms[room.Id].BroadcastMessage("RoomStartPayload", ws.RoomStartPayload {
 		Players: room.Players,
 	})
-	game.StartRoom(room, uno.UnoCards(), uno.UnoCardPlacedListeners())
+	state := game.StartRoom(room, uno.UnoCards(), uno.UnoCardPlacedListeners())
+	state.Run()
 }
 
-// GET: /room/{id}/
+// GET: /rooms/{id}/
 func GetRoom(w http.ResponseWriter, r *http.Request) {
 	rId, err := util.ExtractUrlParam(r.URL.Path, 2)
 	if err != nil {

@@ -64,10 +64,16 @@ func (player *GamePlayer) checkWin() bool {
 }
 
 func (player *GamePlayer) play(state *GameState) {
-	choice, timeout := AskCard(player)
+	choice, valid, timeout := AskCard(player)
 	if timeout {
 		return
 	}
+
+	if !valid {
+		state.DrawCards(player, 1)
+		return
+	}
+
 	played := state.Stack.Play(*choice)
 	// skips in case of wrong choice (frontend can handle this)
 	if played {
