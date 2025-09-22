@@ -146,7 +146,10 @@ const playerPositions = computed(() => {
 function handleDrawCard(): void {
   console.log("Karte vom Stapel gezogen");
 
-  const drawCardMessage = createDrawCardMessage(currentPlayer.value!);
+  const drawCardMessage = createDrawCardMessage(
+    currentPlayer.value!,
+    lastMessageID.value!
+  );
   sendMessage(drawCardMessage);
 
   // Clear timer when player takes action

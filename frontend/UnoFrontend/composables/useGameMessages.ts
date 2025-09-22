@@ -1,13 +1,13 @@
 import type { Card, Player, message, uuid } from "~/util/models";
 
 export const useGameMessages = () => {
-  const createDrawCardMessage = (player: Player): message => ({
+  const createDrawCardMessage = (player: Player, messageId: uuid): message => ({
     type: "PlayerDrawsCardsPayload",
     payload: {
       player,
       amount: 1,
     },
-    message_id: crypto.randomUUID(),
+    message_id: messageId,
     expects_reply: true,
   });
 
