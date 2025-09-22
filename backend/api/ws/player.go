@@ -36,7 +36,7 @@ func (player *WsPlayer) AskAndWaitReply(msgType string, payload any, timeout tim
 	messageId := uuid.New()
 	log.Debugf("Asking player '%s' for reply to message '%s' of type: '%s'\n", player.id, messageId, msgType)
 
-	responseChan := make(chan Message, 1)
+	responseChan := make(chan Message, PLAYER_RESPOND_CHANNEL_BUFFER_SIZE)
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return nil, false, err
@@ -110,6 +110,7 @@ func (player *WsPlayer) readMessages(room *WsRoom) {
 
 		// Check if the message has a RequestID and handle it
 		if msg.ExpectsReply {
+			log.Debugf("Received reply to message: %s\n", msg.MessageId)
 			player.mutex.Lock()
 			responseChan, exists := player.responseChans[msg.MessageId]
 			if exists {
@@ -120,10 +121,10 @@ func (player *WsPlayer) readMessages(room *WsRoom) {
 				continue
 			}
 			player.mutex.Unlock()
+		} else {
+			// Otherwise, process the message normally
+			log.Debugf("Received msg: %s\n", msg.MessageId)
 		}
-
-		// Otherwise, process the message normally
-		log.Debugf("Received message: %+v\n", msg)
 		if room.handler != nil {
 			room.handler(room.id, player.id, msg)
 		}

@@ -4,6 +4,8 @@ import (
 	"slices"
 	"time"
 	"uno_online/api/ws"
+
+	"github.com/Buecherregale/log"
 )
 
 // Returns: chosen card, valid card chosen, request did timeout
@@ -31,6 +33,7 @@ func AskCard(player *GamePlayer) (*Card, bool, bool) {
 			player.WsP.SendError(403, "could not parse card")
 			continue
 		}
+		log.Debugf("Parsed reply to message '%s': %s\n", reply.MessageId, p)
 		card := p.Card.(Card)
 
 		if slices.Contains(player.Hand, card) {
