@@ -15,10 +15,10 @@ import (
 
 func main() {
 	config := log.LogConfig {
-		Level: log.DEBUG,
+		Level: log.LEVEL_DEBUG,
 		Timeformat: time.RFC3339,
-		SerializationStrategy: log.SIMPLE,
-		TargetMode: log.STDOUT,
+		SerializationStrategy: log.STRATEGY_SIMPLE,
+		TargetMode: log.TARGET_STDOUT,
 		Logfile: "",
 	}
 	log.Init(config)

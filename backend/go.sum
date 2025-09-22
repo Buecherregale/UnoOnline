@@ -1,5 +1,5 @@
-github.com/Buecherregale/log v0.1.0 h1:Qy4p5a8xFMRQE9DaViyOGwsNTLS9c5kYbgwnVfsCk4A=
-github.com/Buecherregale/log v0.1.0/go.mod h1:+LlieBqfEOlNjZKUrQAh4U82FNTRm7tbVf2JM2uexUo=
+github.com/Buecherregale/log v0.1.1 h1:uj6lM+w/6EpjGHO32C+kt6TSqmRErasi8WMAX9pCsLc=
+github.com/Buecherregale/log v0.1.1/go.mod h1:+LlieBqfEOlNjZKUrQAh4U82FNTRm7tbVf2JM2uexUo=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aNNg=
