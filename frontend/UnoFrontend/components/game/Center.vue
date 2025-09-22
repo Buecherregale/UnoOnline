@@ -10,9 +10,9 @@
       <div class="discard-pile">
         <div
           class="card card-front"
-          :style="{ backgroundColor: topCard?.color }"
+          :style="{ backgroundColor: mapColor(topCard?.color!) }"
         >
-          <span v-if="topCard">{{ topCard.value }}</span>
+          <span v-if="topCard">{{ mapValue(topCard.value) }}</span>
           <span v-else>Aktuelle Karte</span>
         </div>
       </div>
@@ -22,6 +22,7 @@
 
 <script setup lang="ts">
 import type { Card } from "~/util/models";
+import { mapColor, mapValue } from "~/util/cardParser";
 
 interface Props {
   topCard?: Card;

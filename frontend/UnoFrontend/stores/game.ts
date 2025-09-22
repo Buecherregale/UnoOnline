@@ -14,7 +14,7 @@ export const useGameStore = defineStore("game", {
   state: (): GameState => ({
     playerHand: [],
     topCard: {
-      color: "green",
+      color: 1,
       value: 3,
       chosen: null,
     },
@@ -71,7 +71,7 @@ export const useGameStore = defineStore("game", {
     resetGameState() {
       this.playerHand = [];
       this.topCard = {
-        color: "green",
+        color: 1,
         value: 3,
         chosen: null,
       };

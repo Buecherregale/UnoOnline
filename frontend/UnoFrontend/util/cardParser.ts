@@ -1,10 +1,15 @@
-import type { Card, CardColor, CardValue } from "~/util/models";
+import type {
+  Card,
+  CardColor,
+  CardColorString,
+  CardValueString,
+} from "~/util/models";
 
 /**
- * Maps numeric color codes to CardColor strings
+ * Maps numeric color codes to CardColor numbers
  */
-export function mapColor(colorCode: number): CardColor {
-  const colorMap: Record<number, CardColor> = {
+export function mapColor(colorCode: CardColor): CardColorString {
+  const colorMap: Record<number, CardColorString> = {
     0: "red",
     1: "green",
     2: "blue",
@@ -17,12 +22,12 @@ export function mapColor(colorCode: number): CardColor {
 /**
  * Maps numeric value codes to CardValue
  */
-export function mapValue(valueCode: number): CardValue {
+export function mapValue(valueCode: number): CardValueString {
   if (valueCode >= 0 && valueCode <= 9) {
     return valueCode;
   }
 
-  const valueMap: Record<number, CardValue> = {
+  const valueMap: Record<number, CardValueString> = {
     10: "skip",
     11: "reverse",
     12: "plus2",
@@ -37,8 +42,8 @@ export function mapValue(valueCode: number): CardValue {
  */
 export function parseCardPayload(payload: any): Card {
   return {
-    color: mapColor(payload.Color),
-    value: mapValue(payload.Value),
-    chosen: payload.Chosen !== 0 ? mapColor(payload.Chosen) : null,
+    color: payload.Color,
+    value: payload.Value,
+    chosen: payload.Chosen !== 0 ? payload.Chosen : null,
   };
 }

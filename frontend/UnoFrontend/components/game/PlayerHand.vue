@@ -5,10 +5,10 @@
         v-for="(card, index) in cards"
         :key="`${card.color}-${card.value}-${index}`"
         class="card card-front"
-        :style="{ backgroundColor: card.color }"
+        :style="{ backgroundColor: mapColor(card?.color!) }"
         @click="$emit('playCard', card, index)"
       >
-        {{ card.value }}
+        {{ mapValue(card.value) }}
       </div>
     </div>
   </div>
@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
 import type { Card } from "~/util/models";
+import { mapColor, mapValue } from "~/util/cardParser";
 
 interface Props {
   cards: Card[];

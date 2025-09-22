@@ -15,9 +15,11 @@ export type Room = {
   owner: Player; // Room creator/host
 };
 
-export type CardColor = "red" | "green" | "blue" | "yellow" | "black";
+export type CardColor = 0 | 1 | 2 | 3 | 4; // 0=red, 1=green, 2=blue, 3=yellow, 4=black
+export type CardColorString = "red" | "green" | "blue" | "yellow" | "black";
 
-export type CardValue =
+export type CardValue = number;
+export type CardValueString =
   | number
   | "skip"
   | "reverse"
