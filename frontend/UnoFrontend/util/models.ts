@@ -65,9 +65,11 @@ export interface PlayerWithPosition {
   position: PlayerPosition;
 }
 
+export type uuid = `${string}-${string}-${string}-${string}-${string}`;
+
 export type message = {
   type: string; // the name of the payload type (the tags below + `Payload`)
   payload: any; // the struct instance from below
-  message_id: `${string}-${string}-${string}-${string}-${string}`; // unique id to trace messages. Important for answers to messages
+  message_id: uuid; // unique id to trace messages. Important for answers to messages
   expects_reply: boolean; // if true the server expects the client to reply with the apropriate message with the SAME MessageId
 };

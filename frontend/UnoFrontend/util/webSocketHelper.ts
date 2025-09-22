@@ -1,4 +1,4 @@
-import type { Card, message, Player } from "~/util/models";
+import type { Card, message, Player, uuid } from "~/util/models";
 import { parseCardPayload } from "~/util/cardParser";
 
 /**
@@ -21,7 +21,7 @@ export interface WebSocketEventHandlers {
   onGameStarted?: (card: Card) => void;
   onDrawCard?: (cards: Card[]) => void;
   onPlayerDrawsCards?: (player: Player, amount: number) => void;
-  onAskCard?: (cards: Card[]) => void;
+  onAskCard?: (cards: Card[], id: uuid) => void;
   onError?: (error: Error) => void;
   onStateChange?: (state: WebSocketState) => void;
 }
@@ -120,6 +120,7 @@ export default class WebSocketHelper {
       let amount: number = 0;
       let Cards: any[] = [] as any[];
       let parsedCards: Card[] = [];
+      let msgID: uuid = msg.message_id;
       switch (msg.type) {
         case "RoomJoinPayload":
           player = msg.payload.player as Player;
@@ -160,7 +161,7 @@ export default class WebSocketHelper {
             let card = parseCardPayload(Cards[i]);
             parsedCards.push(card);
           }
-          this.eventHandlers.onAskCard?.(parsedCards);
+          this.eventHandlers.onAskCard?.(parsedCards, msgID);
           break;
         default:
           console.warn("Unknown message type:", msg.type);

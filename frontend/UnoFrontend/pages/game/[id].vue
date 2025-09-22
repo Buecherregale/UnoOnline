@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import type { Card, Player, Room, StartGameRequest } from "~/util/models";
+import type {
+  Card,
+  message,
+  Player,
+  Room,
+  StartGameRequest,
+  uuid,
+} from "~/util/models";
 import { loadPlayerFromCookie } from "~/util/playerCookie";
 import { useGameLogic } from "~/composables/useGameLogic";
 import {
@@ -16,6 +23,7 @@ import { useGameStore } from "~/stores/game";
 const route = useRoute();
 const gameId: string = route.params.id as string;
 const shouldStartGame = ref<boolean>(route.query.start === "true");
+let lastMessageID = ref<uuid | null>(null);
 
 const roomStore = useRoomStore();
 const playerStore = usePlayerStore();
@@ -78,9 +86,11 @@ function setGameHandlers() {
       gameStore.addToPlayerHand(cards);
       console.log("drew Card:", cards[0]);
     },
-    onAskCard: (cards: Card[]): void => {
+    onAskCard: (_: Card[], id: uuid): void => {
       // Start the 30-second timer for the current player
       gameStore.startPlayerTimer(currentPlayer.value!.id);
+
+      lastMessageID.value = id;
     },
     onError: (error: Error): void => {
       console.error("WebSocket error:", error);
@@ -193,14 +203,14 @@ function handlePlayCard(card: Card, index: number) {
   console.log(`${card.color} ${card.value} gespielt`);
   console.log("Karte gespielt");
 
-  const playCardMessage = {
-    type: "CardPlayedPayload",
+  const playCardMessage: message = {
+    type: "AnswerCardPayload",
     payload: {
       player: currentPlayer.value!,
       card: card,
     },
-    message_id: crypto.randomUUID(),
-    expects_reply: true,
+    message_id: lastMessageID.value!,
+    expects_reply: false,
   };
 
   const { sendMessage } = useWebSocket();
