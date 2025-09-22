@@ -153,7 +153,7 @@ class WebSocketService {
    * Sends a message via WebSocket
    */
   public sendMessage(message: message): boolean {
-    return this.wsHelper?.sendMessage(message) ?? false;
+    return this.wsHelper?.queueMessage(message) ?? false;
   }
 }
 

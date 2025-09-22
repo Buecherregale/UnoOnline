@@ -20,6 +20,7 @@ export interface WebSocketEventHandlers {
   onRoomStarted?: (roomId: string) => void;
   onGameStarted?: (card: Card) => void;
   onDrawCard?: (cards: Card[]) => void;
+  onPlayerDrawsCards?: (player: Player, amount: number) => void;
   onError?: (error: Error) => void;
   onStateChange?: (state: WebSocketState) => void;
 }
@@ -115,6 +116,7 @@ export default class WebSocketHelper {
 
       let player: Player | null = null;
       let newOwner: Player | null = null;
+      let amount: number = 0;
       switch (msg.type) {
         case "RoomJoinPayload":
           player = msg.payload.player as Player;
@@ -142,6 +144,11 @@ export default class WebSocketHelper {
             parsedCards.push(card);
           }
           this.eventHandlers.onDrawCard?.(parsedCards);
+          break;
+        case "PlayerDrawsCardsPayload":
+          player = msg.payload.player as Player;
+          amount = msg.payload.amount as number;
+          this.eventHandlers.onPlayerDrawsCards?.(player, amount);
           break;
         default:
           console.warn("Unknown message type:", msg.type);
@@ -198,31 +205,28 @@ export default class WebSocketHelper {
   /**
    * Sends a message via WebSocket
    */
-  public sendMessage(message: message): boolean {
+  private sendMessage(message: message): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       try {
         this.socket.send(JSON.stringify(message));
         console.log("Message sent:", message);
-        return true;
       } catch (error) {
         console.error("Error sending message:", error);
-        return false;
       }
     } else {
       console.warn("WebSocket is not connected, message queued");
-      return false;
     }
   }
 
   /**
    * Queues a message for sending when connection is available
    */
-  private queueMessage(message: message): void {
+  public queueMessage(message: message): void {
     if (this.isConnected()) {
       this.sendMessage(message);
     } else {
-      this.messageQueue.push(message);
       console.log("Message queued:", message);
+      this.messageQueue.push(message);
     }
   }
 
