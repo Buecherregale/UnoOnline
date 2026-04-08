@@ -1,15 +1,14 @@
-# Use the official Node.js image as the base image
-FROM node:20-alpine AS build
+FROM oven/bun:1.3.11-slim AS build
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the package.json and package-lock.json to the working directory
+# Copy the package.json and bun.lock to the working directory
 COPY UnoFrontend/package.json /app/
-COPY UnoFrontend/package-lock.json /app/
+COPY UnoFrontend/bun.lock /app/
 
 # Install dependencies
-RUN npm install
+RUN bun install
 
 # Copy the entire project to the container
 COPY UnoFrontend/ .
@@ -19,19 +18,20 @@ ARG API_BASE_URL
 ENV API_BASE_URL=${API_BASE_URL}
 
 # Build the Nuxt app for production
-RUN npm run build
+RUN bun run build
 
 # Use a lightweight web server image for the final stage
-FROM node:20-alpine
+FROM oven/bun:1.3.11-slim
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the built files and dependencies from the build stage
-COPY --from=build /app/.output /app/.output
+COPY --from=build /app/.output ./
 
 # Expose the port that Nuxt will run on
 EXPOSE 3000
 
+ENV NODE_ENV=production
+
 # Set the default command to run the Nuxt server
-CMD ["node", ".output/server/index.mjs"]
+CMD ["bun", "run", "server/index.mjs"]

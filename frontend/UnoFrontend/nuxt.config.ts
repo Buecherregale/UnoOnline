@@ -14,6 +14,10 @@ export default defineNuxtConfig({
       experimental: {
           websocket: true
       },
+      preset: 'bun',
+      externals: {
+        inline: ['vue', 'pinia', '@vueuse/core']
+      }
   },
   pinia: {
     storesDirs: ['./stores/**'],
